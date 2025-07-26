@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import { User, LoginRequest, AuthResponse } from '@/types'
 import { authApi } from '@/api/auth'
 
@@ -19,13 +18,11 @@ interface AuthStore extends AuthState {
   initializeAuth: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-      error: null,
+export const useAuthStore = create<AuthStore>()((set, get) => ({
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+  error: null,
       
       login: async (credentials: LoginRequest) => {
         set({ isLoading: true, error: null })
@@ -44,6 +41,9 @@ export const useAuthStore = create<AuthStore>()(
           
           // 사용자 정보 조회
           const user = await authApi.getCurrentUser()
+          
+          // 사용자 정보도 localStorage에 저장
+          localStorage.setItem('user', JSON.stringify(user))
           
           set({
             user,
@@ -90,50 +90,50 @@ export const useAuthStore = create<AuthStore>()(
       },
       
       initializeAuth: async () => {
+        console.log('🔄 initializeAuth 시작')
+        set({ isLoading: true })
+        
         const token = localStorage.getItem('authToken')
-        const currentState = get()
+        const savedUser = localStorage.getItem('user')
         
-        // 토큰이 없으면 인증 상태 초기화
+        console.log('localStorage 상태:', { 
+          token: token ? '존재함' : '없음', 
+          user: savedUser ? '존재함' : '없음' 
+        })
+        
         if (!token) {
-          set({ isAuthenticated: false, user: null, isLoading: false })
+          console.log('❌ 토큰 없음, 로그아웃 상태로 설정')
+          localStorage.removeItem('user')
+          set({ isLoading: false, isAuthenticated: false, user: null })
           return
         }
         
-        // 이미 인증된 상태이고 사용자 정보가 있으면 추가 검증 없이 유지
-        if (currentState.isAuthenticated && currentState.user) {
-          return
+        // 저장된 사용자 정보가 있으면 먼저 복원
+        if (savedUser) {
+          try {
+            const user = JSON.parse(savedUser)
+            console.log('✅ localStorage에서 사용자 정보 복원:', user)
+            set({ user, isAuthenticated: true, isLoading: false, error: null })
+            return
+          } catch (error) {
+            console.error('❌ 저장된 사용자 정보 파싱 실패:', error)
+            localStorage.removeItem('user')
+          }
         }
         
+        // 토큰은 있지만 사용자 정보가 없으면 API 호출
         try {
-          set({ isLoading: true })
+          console.log('🔍 현재 사용자 정보 조회 시도')
           const user = await authApi.getCurrentUser()
-          
-          set({
-            user,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null
-          })
-        } catch (error: any) {
-          // 토큰이 유효하지 않은 경우 제거
+          console.log('✅ 사용자 정보 조회 성공:', user)
+          localStorage.setItem('user', JSON.stringify(user))
+          set({ user, isAuthenticated: true, isLoading: false, error: null })
+        } catch (error) {
+          console.error('❌ 사용자 정보 조회 실패:', error)
           localStorage.removeItem('authToken')
           localStorage.removeItem('user')
-          
-          set({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: null
-          })
+          set({ user: null, isAuthenticated: false, isLoading: false, error: null })
         }
       }
-    }),
-    {
-      name: 'auth-storage',
-      partialize: (state) => ({ 
-        user: state.user, 
-        isAuthenticated: state.isAuthenticated 
-      })
-    }
-  )
+  })
 )
