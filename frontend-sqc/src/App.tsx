@@ -7,7 +7,7 @@ function App() {
 
   useEffect(() => {
     initializeAuth()
-  }, [])
+  }, [initializeAuth])
 
   return <AppRoutes />
 }

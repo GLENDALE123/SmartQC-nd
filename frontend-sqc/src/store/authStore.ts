@@ -91,9 +91,16 @@ export const useAuthStore = create<AuthStore>()(
       
       initializeAuth: async () => {
         const token = localStorage.getItem('authToken')
+        const currentState = get()
         
+        // 토큰이 없으면 인증 상태 초기화
         if (!token) {
           set({ isAuthenticated: false, user: null, isLoading: false })
+          return
+        }
+        
+        // 이미 인증된 상태이고 사용자 정보가 있으면 추가 검증 없이 유지
+        if (currentState.isAuthenticated && currentState.user) {
           return
         }
         
