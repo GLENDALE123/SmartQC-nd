@@ -1,0 +1,411 @@
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { QualityHistoryService } from '../services/quality-history.service';
+import { CreateQualityHistoryDto } from '../dto/create-quality-history.dto';
+import { UpdateQualityHistoryDto } from '../dto/update-quality-history.dto';
+import { CreateInspectionBatchDto } from '../dto/create-inspection-batch.dto';
+
+@ApiTags('품질 이력 관리')
+@Controller('quality-histories')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+export class QualityHistoryController {
+  constructor(private readonly qualityHistoryService: QualityHistoryService) {}
+
+  @Get()
+  @ApiOperation({ 
+    summary: '품질 이력 목록 조회',
+    description: '검색 조건과 페이징을 사용하여 품질 이력 목록을 조회합니다.'
+  })
+  @ApiQuery({ 
+    name: 'search', 
+    required: false, 
+    description: '검색어 (주문번호, 제품명, 부품명 등)' 
+  })
+  @ApiQuery({ 
+    name: 'limit', 
+    required: false, 
+    description: '조회할 항목 수',
+    type: 'number'
+  })
+  @ApiQuery({ 
+    name: 'offset', 
+    required: false, 
+    description: '건너뛸 항목 수',
+    type: 'number'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: '품질 이력 목록을 성공적으로 조회했습니다.' 
+  })
+  async getQualityHistories(
+    @Query('search') search?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    const filters = {
+      search,
+      limit: limit ? parseInt(limit) : undefined,
+      offset: offset ? parseInt(offset) : undefined,
+    };
+    return this.qualityHistoryService.getQualityHistories(filters);
+  }
+
+  @Get(':id')
+  @ApiOperation({ 
+    summary: '특정 품질 이력 조회',
+    description: '품질 이력 ID를 사용하여 특정 품질 이력과 관련 배치 정보를 조회합니다.'
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: '품질 이력 ID',
+    type: 'string'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: '품질 이력을 성공적으로 조회했습니다.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '유효하지 않은 ID입니다.' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: '해당 이력을 찾을 수 없습니다.' 
+  })
+  async getQualityHistory(@Param('id') id: string) {
+    const qualityHistoryId = parseInt(id);
+    if (isNaN(qualityHistoryId)) {
+      throw new HttpException('유효하지 않은 ID입니다.', HttpStatus.BAD_REQUEST);
+    }
+
+    const qualityHistory = await this.qualityHistoryService.getQualityHistoryWithBatches(qualityHistoryId);
+    if (!qualityHistory) {
+      throw new HttpException('해당 이력을 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    }
+
+    return qualityHistory;
+  }
+
+  @Get('/batches/:id')
+  @ApiOperation({ summary: '검사 배치 단일 조회', description: '배치 ID로 검사 배치 상세 정보를 조회합니다.' })
+  @ApiParam({ name: 'id', description: '배치 ID', type: 'string' })
+  @ApiResponse({ status: 200, description: '배치 정보를 성공적으로 조회했습니다.' })
+  @ApiResponse({ status: 404, description: '배치를 찾을 수 없습니다.' })
+  async getInspectionBatch(@Param('id') id: string) {
+    const batch = await this.qualityHistoryService.getInspectionBatchById(Number(id));
+    if (!batch) throw new HttpException('배치를 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    return batch;
+  }
+
+  @Get('/inspection-batches/:id')
+  @ApiOperation({ summary: '검사 배치 단일 조회 (alias)', description: '배치 ID로 검사 배치 상세 정보를 조회합니다. (inspection-batches 경로 alias)' })
+  @ApiParam({ name: 'id', description: '배치 ID', type: 'string' })
+  @ApiResponse({ status: 200, description: '배치 정보를 성공적으로 조회했습니다.' })
+  @ApiResponse({ status: 404, description: '배치를 찾을 수 없습니다.' })
+  async getInspectionBatchAlias(@Param('id') id: string) {
+    const batch = await this.qualityHistoryService.getInspectionBatchById(Number(id));
+    if (!batch) throw new HttpException('배치를 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    return batch;
+  }
+
+  @Post()
+  @ApiOperation({ 
+    summary: '새로운 품질 이력 생성',
+    description: '새로운 품질 이력을 생성합니다.'
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: '품질 이력이 성공적으로 생성되었습니다.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '잘못된 요청 데이터입니다.' 
+  })
+  async createQualityHistory(@Body() createQualityHistoryDto: CreateQualityHistoryDto) {
+    return this.qualityHistoryService.createQualityHistory(createQualityHistoryDto);
+  }
+
+  @Post(':id/batches')
+  @ApiOperation({ 
+    summary: '검사 배치 생성',
+    description: '특정 품질 이력에 새로운 검사 배치를 생성합니다.'
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: '품질 이력 ID',
+    type: 'string'
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: '검사 배치가 성공적으로 생성되었습니다.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '유효하지 않은 품질 이력 ID입니다.' 
+  })
+  async createInspectionBatch(
+    @Param('id') id: string,
+    @Body() createInspectionBatchDto: CreateInspectionBatchDto,
+  ) {
+    const qualityHistoryId = parseInt(id);
+    if (isNaN(qualityHistoryId)) {
+      throw new HttpException('유효하지 않은 품질 이력 ID입니다.', HttpStatus.BAD_REQUEST);
+    }
+
+    return this.qualityHistoryService.createInspectionBatch({ qualityHistoryId });
+  }
+
+  @Delete(':historyId/batches/:batchId')
+  @ApiOperation({ 
+    summary: '검사 배치 삭제',
+    description: '특정 품질 이력의 검사 배치를 삭제합니다.'
+  })
+  @ApiParam({ 
+    name: 'historyId', 
+    description: '품질 이력 ID',
+    type: 'string'
+  })
+  @ApiParam({ 
+    name: 'batchId', 
+    description: '배치 ID',
+    type: 'string'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: '작업 그룹이 성공적으로 삭제되었습니다.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '유효하지 않은 배치 ID입니다.' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: '삭제할 작업 그룹을 찾을 수 없습니다.' 
+  })
+  async deleteInspectionBatch(
+    @Param('historyId') historyId: string,
+    @Param('batchId') batchId: string,
+  ) {
+    const batchIdNum = parseInt(batchId);
+    if (isNaN(batchIdNum)) {
+      throw new HttpException('유효하지 않은 배치 ID입니다.', HttpStatus.BAD_REQUEST);
+    }
+
+    const success = await this.qualityHistoryService.deleteInspectionBatch(batchIdNum);
+    if (!success) {
+      throw new HttpException('삭제할 작업 그룹을 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    }
+
+    return { message: '작업 그룹이 성공적으로 삭제되었습니다.' };
+  }
+
+  // 개별 검사 삭제 API들
+  @Delete(':historyId/batches/:batchId/incoming-inspection')
+  @ApiOperation({ 
+    summary: '수입검사 삭제',
+    description: '특정 배치의 수입검사만 삭제합니다.'
+  })
+  @ApiParam({ 
+    name: 'historyId', 
+    description: '품질 이력 ID',
+    type: 'string'
+  })
+  @ApiParam({ 
+    name: 'batchId', 
+    description: '배치 ID',
+    type: 'string'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: '수입검사가 성공적으로 삭제되었습니다.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '유효하지 않은 배치 ID입니다.' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: '삭제할 수입검사를 찾을 수 없습니다.' 
+  })
+  async deleteIncomingInspection(
+    @Param('historyId') historyId: string,
+    @Param('batchId') batchId: string,
+  ) {
+    const batchIdNum = parseInt(batchId);
+    if (isNaN(batchIdNum)) {
+      throw new HttpException('유효하지 않은 배치 ID입니다.', HttpStatus.BAD_REQUEST);
+    }
+
+    const success = await this.qualityHistoryService.deleteIncomingInspection(batchIdNum);
+    if (!success) {
+      throw new HttpException('삭제할 수입검사를 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    }
+
+    return { message: '수입검사가 성공적으로 삭제되었습니다.' };
+  }
+
+  @Delete(':historyId/batches/:batchId/process-inspection')
+  @ApiOperation({ 
+    summary: '공정검사 삭제',
+    description: '특정 배치의 공정검사만 삭제합니다.'
+  })
+  @ApiParam({ 
+    name: 'historyId', 
+    description: '품질 이력 ID',
+    type: 'string'
+  })
+  @ApiParam({ 
+    name: 'batchId', 
+    description: '배치 ID',
+    type: 'string'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: '공정검사가 성공적으로 삭제되었습니다.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '유효하지 않은 배치 ID입니다.' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: '삭제할 공정검사를 찾을 수 없습니다.' 
+  })
+  async deleteProcessInspection(
+    @Param('historyId') historyId: string,
+    @Param('batchId') batchId: string,
+  ) {
+    const batchIdNum = parseInt(batchId);
+    if (isNaN(batchIdNum)) {
+      throw new HttpException('유효하지 않은 배치 ID입니다.', HttpStatus.BAD_REQUEST);
+    }
+
+    const success = await this.qualityHistoryService.deleteProcessInspection(batchIdNum);
+    if (!success) {
+      throw new HttpException('삭제할 공정검사를 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    }
+
+    return { message: '공정검사가 성공적으로 삭제되었습니다.' };
+  }
+
+  @Delete(':historyId/batches/:batchId/shipment-inspection')
+  @ApiOperation({ 
+    summary: '출하검사 삭제',
+    description: '특정 배치의 출하검사만 삭제합니다.'
+  })
+  @ApiParam({ 
+    name: 'historyId', 
+    description: '품질 이력 ID',
+    type: 'string'
+  })
+  @ApiParam({ 
+    name: 'batchId', 
+    description: '배치 ID',
+    type: 'string'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: '출하검사가 성공적으로 삭제되었습니다.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '유효하지 않은 배치 ID입니다.' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: '삭제할 출하검사를 찾을 수 없습니다.' 
+  })
+  async deleteShipmentInspection(
+    @Param('historyId') historyId: string,
+    @Param('batchId') batchId: string,
+  ) {
+    const batchIdNum = parseInt(batchId);
+    if (isNaN(batchIdNum)) {
+      throw new HttpException('유효하지 않은 배치 ID입니다.', HttpStatus.BAD_REQUEST);
+    }
+
+    const success = await this.qualityHistoryService.deleteShipmentInspection(batchIdNum);
+    if (!success) {
+      throw new HttpException('삭제할 출하검사를 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    }
+
+    return { message: '출하검사가 성공적으로 삭제되었습니다.' };
+  }
+
+  @Put(':id')
+  @ApiOperation({ 
+    summary: '품질 이력 업데이트',
+    description: '기존 품질 이력의 정보를 업데이트합니다.'
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: '품질 이력 ID',
+    type: 'string'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: '품질 이력이 성공적으로 업데이트되었습니다.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '유효하지 않은 ID입니다.' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: '해당 이력을 찾을 수 없습니다.' 
+  })
+  async updateQualityHistory(
+    @Param('id') id: string,
+    @Body() updateQualityHistoryDto: UpdateQualityHistoryDto,
+  ) {
+    const qualityHistoryId = parseInt(id);
+    if (isNaN(qualityHistoryId)) {
+      throw new HttpException('유효하지 않은 ID입니다.', HttpStatus.BAD_REQUEST);
+    }
+
+    const qualityHistory = await this.qualityHistoryService.updateQualityHistory(qualityHistoryId, updateQualityHistoryDto);
+    if (!qualityHistory) {
+      throw new HttpException('해당 이력을 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    }
+
+    return qualityHistory;
+  }
+
+  @Delete(':id')
+  @ApiOperation({ 
+    summary: '품질 이력 삭제',
+    description: '특정 품질 이력을 삭제합니다.'
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: '품질 이력 ID',
+    type: 'string'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: '이력이 성공적으로 삭제되었습니다.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '유효하지 않은 ID입니다.' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: '해당 이력을 찾을 수 없습니다.' 
+  })
+  async deleteQualityHistory(@Param('id') id: string) {
+    const qualityHistoryId = parseInt(id);
+    if (isNaN(qualityHistoryId)) {
+      throw new HttpException('유효하지 않은 ID입니다.', HttpStatus.BAD_REQUEST);
+    }
+
+    const success = await this.qualityHistoryService.deleteQualityHistory(qualityHistoryId);
+    if (!success) {
+      throw new HttpException('해당 이력을 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    }
+
+    return { message: '이력이 성공적으로 삭제되었습니다.' };
+  }
+}

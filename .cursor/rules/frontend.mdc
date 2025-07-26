@@ -1,0 +1,251 @@
+---
+alwaysApply: true
+---
+# Frontend Development Rules & Guidelines
+
+## 1. Project Directory Structure: Feature-Driven / Domain-Driven Approach
+
+We will adopt a feature (or domain)-driven approach for organizing all project code. This strategy enhances code cohesion and simplifies management, especially as the application scales or when multiple developers collaborate.
+
+```
+src/
+├── App.jsx                 # The application's top-level component and main routing configuration.
+├── assets/                 # Static assets like images, fonts, and icons.
+│   ├── images/             # .png, .jpg, .svg image files.
+│   └── fonts/              # Web font files.
+├── components/             # Globally reusable, common UI components.
+│   ├── Button/             # Example: <Button> component folder.
+│   │   ├── Button.jsx
+│   │   └── Button.module.css # Recommended to use CSS Modules.
+│   ├── Modal/              # Example: <Modal> component folder.
+│   │   ├── Modal.jsx
+│   │   └── Modal.css
+│   └── LoadingSpinner.jsx  # Simple components that consist of a single file.
+├── features/               # Folders for the application's major features (core business logic units).
+│   ├── auth/               # Example: Authentication-related features (login, signup).
+│   │   ├── components/     # Components used *only within* the authentication feature.
+│   │   │   └── LoginForm.jsx
+│   │   ├── hooks/          # Custom hooks related to authentication.
+│   │   │   └── useAuth.js
+│   │   ├── pages/          # Page components related to authentication (top-level views for this feature).
+│   │   │   ├── LoginPage.jsx
+│   │   │   └── SignUpPage.jsx
+│   │   └── services/       # API communication logic specific to authentication.
+│   │       └── authApi.js  # Example: Login/signup API call functions.
+│   ├── products/           # Example: Product listing, detail pages features.
+│   │   ├── components/
+│   │   │   ├── ProductCard.jsx
+│   │   │   └── ProductList.jsx
+│   │   ├── pages/
+│   │   │   ├── ProductsPage.jsx
+│   │   │   └── ProductDetailPage.jsx
+│   │   └── hooks/          # Custom hooks related to products.
+│   │       └── useProductFilter.js
+│   └── users/              # Example: User profile, dashboard features.
+│       ├── components/
+│       │   └── UserProfileCard.jsx
+│       └── pages/
+│           └── UserDashboardPage.jsx
+├── hooks/                  # Globally used, generic custom hooks (not tied to a specific feature).
+│   ├── useDebounce.js      # Example: Debouncing hook.
+│   └── useLocalStorage.js  # Example: Local storage hook.
+├── layouts/                # Components defining the overall page layouts.
+│   ├── MainLayout.jsx      # Main layout applied to most pages (includes Header, Sidebar, Footer).
+│   └── AuthLayout.jsx      # Layout specifically for authentication-related pages (login/signup).
+├── services/               # Global API communication logic and configuration (e.g., Axios instance).
+│   └── api.js              # Example: Base API setup, interceptors.
+├── store/                  # Global state management (based on Recoil, Zustand, or chosen library).
+│   ├── index.js            # State store configuration.
+│   ├── authAtom.js         # Example: Recoil atom definition.
+│   └── productSelectors.js # Example: Recoil selector definition.
+├── styles/                 # Global stylesheet files and theme definitions.
+│   ├── global.css          # Base styles applied across the entire application.
+│   └── variables.css       # CSS variable definitions (colors, font sizes, etc.).
+├── utils/                  # Global utility functions (date formatting, validation, etc.).
+│   ├── helpers.js
+│   └── validators.js
+└── main.jsx                # The application's entry point (React DOM rendering).
+```
+
+## 2. Component Management Rules
+
+Components are classified and managed clearly based on their role and reusability.
+
+### 2.1. Component Classification Principles
+
+**components/ folder:**
+- **Purpose:** Stores generic, highly reusable UI components that can be used across the entire application. They should be independent and not tied to any specific feature.
+- **Examples:** Button, Modal, InputField, LoadingSpinner, Avatar.
+- **Sub-structure:**
+  - For most components, create a dedicated folder for each component, containing its .jsx (or .tsx) and .css (or .module.css) files.
+  - Very simple components can be placed directly under components/ as single .jsx files.
+
+**features/[featureName]/components/ folder:**
+- **Purpose:** Contains components that are used only within a specific feature or are tightly coupled with that feature's logic. These components typically have lower reusability outside their feature.
+- **Examples (auth/components):** LoginForm, SignUpForm, ForgotPasswordForm.
+- **Examples (products/components):** ProductCard, ProductList, ProductFilter.
+- **Important:** Avoid directly importing and using these components from other feature folders or from the global components/ folder. If broader reusability becomes necessary, consider refactoring and moving them to the global components/ folder.
+
+**features/[featureName]/pages/ folder:**
+- **Purpose:** These are top-level view components within a specific feature. They are directly connected to React Router Dom's <Route> and typically compose multiple lower-level components to form a complete page screen.
+- **Examples:** LoginPage, ProductsPage, ProductDetailPage, UserDashboardPage.
+- **Role:** Primarily rendered inside a layout component, and may contain the main data fetching or state management logic for that specific page.
+
+**layouts/ folder:**
+- **Purpose:** Defines the overall layout (shell) of the application. These components include elements common across multiple pages, such as Header, Sidebar, Footer, and use React Router Dom's <Outlet /> to inject the actual page content.
+- **Examples:** MainLayout, AuthLayout (for login/signup pages).
+- **Characteristic:** Applied once in the top-level routing configuration file (App.jsx) to ensure all subsequent page components share the same layout structure.
+
+### 2.2. Component Naming Conventions
+
+- **PascalCase:** All React component filenames and folder names must start with an uppercase letter, following PascalCase.
+  - **Examples:** MyButton.jsx, UserProfile.jsx, ProductCard/, LoginPage/.
+
+### 2.3. CSS Styling Rules
+
+- **CSS Modules Recommended:** Use the .module.css extension for component-specific CSS to prevent class name conflicts and ensure clear scoping.
+  - **Example:** Button.module.css.
+- **CSS files within component folders:** CSS files specific to a component should reside in the same folder as their corresponding .jsx file.
+- **Global styles in styles/:** Global styles, variables, and theme definitions should be managed separately in the src/styles/ folder (e.g., global.css, variables.css).
+
+### 2.4. Import Rules
+
+- **Absolute Path Imports (Optional but Recommended):** Configure path aliases in tsconfig.json (for TypeScript) or jsconfig.json (for JavaScript) to allow shorter, absolute imports instead of long relative paths.
+  - **Example:** `import Button from '@components/Button';` instead of `import Button from '../../components/Button';`.
+- **Grouped Imports:**
+  1. React and external library imports.
+  2. Common component imports.
+  3. features folder component imports.
+  4. Stylesheet imports.
+  - Separate each group with an empty line to improve readability.
+
+---
+
+## 3. Additional Essential Rules for Frontend Development
+
+Beyond directory structure and component management, several other crucial rules govern robust and maintainable frontend development. Adhering to these principles will significantly improve code quality, streamline collaboration, and ease long-term project maintenance.
+
+### 3.1. Consistent Coding Conventions
+
+Ensuring all developers write code in a uniform manner is fundamental for collaboration. It enhances code readability and minimizes unnecessary debates.
+
+**Formatting:**
+- **Indentation:** Choose either tabs or spaces and apply them consistently throughout the codebase (2 or 4 spaces are commonly preferred).
+- **Semicolons:** Decide whether to use semicolons at the end of statements and adhere strictly to that decision (generally recommended to use them).
+- **Quotes:** Standardize on either single (') or double (") quotes. (In JSX, double quotes are often preferred for attributes, while single quotes are common in JavaScript strings.)
+
+**Naming Conventions:**
+- **Variables/Functions:** Use camelCase (e.g., userName, handleClick).
+- **Components:** Use PascalCase (e.g., MyButton, UserProfile).
+- **Constants:** Use UPPER_SNAKE_CASE (e.g., API_KEY, MAX_ITEM_COUNT).
+- **Files/Folders:**
+  - Component folders/files: PascalCase (e.g., components/Button/Button.jsx).
+  - Utility, hooks, service files: camelCase or kebab-case (e.g., utils/helpers.js, hooks/use-auth.js).
+
+**Use Linters and Formatters:**
+- **ESLint:** Enforces coding conventions and identifies potential errors.
+- **Prettier:** Automatically formats code to a consistent style.
+- Using these two tools together automates code cleanliness, making it highly efficient for developers.
+
+### 3.2. Unidirectional Data Flow
+
+This is a core principle of React: data should always flow in a single direction, from parent components down to child components.
+
+- **Prop Passing:** Parents pass data to children via props. Children cannot directly modify these props; they only use the received data to render their UI.
+- **Lifting State Up:** If multiple child components need to share or modify a piece of state, that state should be "lifted up" to the closest common parent component. The parent then manages this state and passes it, along with functions to update it, down to its children via props.
+- **Benefits:** Data flow becomes predictable and easier to trace, which simplifies debugging and increases code stability.
+
+### 3.3. Component Single Responsibility Principle
+
+Each component should have only one clear, well-defined responsibility.
+
+- **Make Components Small and Reusable:** If a component tries to do too many things, it becomes complex and loses reusability. Break down large components into smaller, more focused ones, each with a clear role.
+  - **Example:** Instead of a single UserForm component handling user display, input, submission, and API calls, separate it into UserDisplay, UserInput, FormSubmitButton, etc. Then, compose them in a higher-level UserFormPage component.
+- **Separate Data Logic from UI:** It's good practice to separate components responsible for data logic (fetching, transforming data) from those that are purely for rendering UI (often called Dumb/Presentational Components). (This aligns with patterns like Container/Presentational components).
+
+### 3.4. Robust Error Handling
+
+Providing user-friendly error handling is crucial for a good user experience.
+
+- **API Error Handling:** Implement try-catch blocks or .catch() methods when making API calls to gracefully handle failures. Provide appropriate feedback to the user (e.g., "Failed to load data, please try again.").
+- **UI Error Handling:** Use Error Boundaries to isolate and display fallback UI for unexpected errors within specific parts of the UI, preventing the entire application from crashing.
+- **User Feedback:** Clearly display loading states, success messages, and error messages to users to reduce confusion.
+
+### 3.5. Performance Optimization
+
+Consider performance to ensure a smooth and responsive user experience.
+
+- **Prevent Unnecessary Re-renders:**
+  - **React.memo:** Prevents a component from re-rendering if its props have not changed.
+  - **useMemo, useCallback:** Memoize expensive computations or prevent functions from being unnecessarily recreated.
+- **Code Splitting:** Reduce initial load times by splitting the application's code into smaller chunks that are loaded only when needed (e.g., using React.lazy and Suspense, or router-based code splitting).
+- **Image Optimization:** Large image files are a major cause of slow web performance. Optimize images to appropriate sizes and formats (like WebP) before deploying.
+
+### 3.6. Web Accessibility (A11y)
+
+Ensure that all users, regardless of their abilities, can equally access and interact with the website.
+
+- **Semantic HTML:** Instead of only using <div>, utilize HTML5 semantic tags like <header>, <nav>, <main>, <footer>, and <button> appropriately. This provides clear meaning to the document structure, which is vital for assistive technologies like screen readers.
+- **ARIA Attributes:** Use ARIA (Accessible Rich Internet Applications) attributes (e.g., aria-label, role) as needed to provide additional information to screen reader users.
+- **Keyboard Navigation:** Ensure all interactive elements (buttons, links, form fields) are accessible and operable using only the keyboard, without requiring a mouse.
+
+## 4. Advanced Development Patterns
+
+### 4.1. State Management Pattern Clarification
+
+As the application scales, managing data flow with simple useState becomes challenging. Clear rules are needed for how global state is managed and where each component should fetch its data from.
+
+**RULE: Choose a State Management Solution and Stick to It.**
+- Select a state management library that fits the project's scale and the team's proficiency (e.g., Recoil, Zustand, Jotai, Redux Toolkit) and adhere to its best practices.
+- **Atom/Slice Unit Management:** Manage state by dividing it into small, independent units (e.g., Recoil atoms, Redux Toolkit slices) and keep related logic (selectors, reducers, actions) together.
+- **Handling Asynchronous State Updates:** Define a systematic pattern for managing loading, success, and error states when updating state due to asynchronous operations like API calls (e.g., consider using useQuery or rtk-query).
+
+### 4.2. Data Fetching Strategy Establishment
+
+Frontend applications mostly fetch and display data from backend APIs. A strategy for how this data is fetched, cached, and updated is crucial.
+
+**RULE: Centralize Data Fetching Logic.**
+- **Utilize services/ folder:** Consolidate API request functions within the src/services/ folder (e.g., authApi.js, productApi.js). These functions should solely be responsible for data requests.
+- **Consider Data Fetching Libraries:** Using libraries like React Query (TanStack Query), SWR, or Apollo Client (for GraphQL) can significantly streamline caching, re-fetching, loading/error state management, and background updates. This greatly improves both developer and user experience.
+- **Explicit UI for Loading/Error States:** Provide clear visual feedback to the user (e.g., loading spinners, error messages) when data is being fetched or an error occurs.
+
+### 4.3. Form Management Strategy Definition
+
+Forms, which receive user input, are common in web applications but can be complex to manage in terms of state, validation, and submission handling.
+
+**RULE: Adopt a Consistent Form Management Approach.**
+- **Consider Form Libraries:** Using form management libraries like React Hook Form or Formik simplifies validation, input value management, and error message display. React Hook Form is particularly strong in terms of performance.
+- **Validation:** Apply client-side validation for all form inputs to prevent incorrect data submission proactively (e.g., integrate with schema validation libraries like Yup or Zod).
+- **Submission State Management:** Clearly manage loading, success, and error states during form submission and provide feedback to the user.
+
+### 4.4. Testing Strategy Establishment
+
+Automated testing is essential to ensure code quality and stability.
+
+**RULE: Implement a Comprehensive Testing Strategy.**
+- **Test Environment Setup:** Configure testing tools such as Jest (test runner and assertion library) and React Testing Library (for component testing).
+- **Types of Tests:**
+  - **Unit Tests:** Verify that individual logic units (small functions or components) work as expected.
+  - **Integration Tests:** Verify the interactions when multiple components or modules work together.
+  - **E2E (End-to-End) Tests:** Test the entire application from a user's perspective (e.g., using Cypress, Playwright).
+- **Test Coverage Goal Setting:** Set and manage test coverage goals based on the project's criticality.
+- **Test Code Location:** Place test files (e.g., [filename].test.js or [filename].spec.js) in the same folder as the files they are testing.
+
+### 4.5. Web Performance Optimization Considerations
+
+Fast loading times and a smooth user experience directly correlate with user satisfaction.
+
+**RULE: Prioritize Performance from the Start.**
+- **Bundle Size Optimization:** Periodically check bundle size using tools like Webpack Bundle Analyzer and reduce it by removing unnecessary libraries or applying code splitting.
+- **Image/Media Optimization:** Optimize image size, format (WebP), and apply lazy loading to reduce loading times.
+- **Virtualization/Windowing:** For rendering long lists (e.g., 1000+ items), optimize performance by rendering only the visible portion on the screen (e.g., react-window, react-virtualized).
+- **Caching Strategy:** Consider leveraging Service Workers to cache static assets or API responses and enable offline support.
+
+### 4.6. Deployment and CI/CD Automation
+
+The process of deploying developed code to the actual service environment should be automated.
+
+**RULE: Automate Deployment with CI/CD Pipelines.**
+- **CI (Continuous Integration):** Automatically build and run tests whenever code changes are pushed, catching integration issues early (e.g., GitHub Actions, GitLab CI, Jenkins).
+- **CD (Continuous Deployment/Delivery):** Automatically deploy tested code to staging or production environments.
+- **Environment Variable Management:** Securely manage different configurations (e.g., API endpoints) for development, staging, and production environments using .env files.

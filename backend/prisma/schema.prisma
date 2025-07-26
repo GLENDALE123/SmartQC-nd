@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  admin
+  inspector
+  manager
+  operator
+}
+
+enum InspectionStatus {
+  pending
+  in_progress
+  passed
+  failed
+  cancelled
+}
+
+enum InspectionDraftStatus {
+  draft
+  completed
+}
+
+enum InspectionType {
+  visual
+  measurement
+  functional
+  safety
+}
+
+model User {
+  id              Int       @id @default(autoincrement())
+  username        String    @unique
+  password        String
+  name            String
+  role            UserRole  @default(operator)
+  isActive        Boolean   @default(true)
+  // 새로 추가되는 필드들
+  inspectionType  String?   // 'incoming', 'process', 'shipment', 'all'
+  processLine     String?   // 공정라인 정보
+  authType        String?   @default("local") // 'local', 'oauth'
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model DefectType {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  color       String?  // 색상 필드 추가 (예: "#FF0000", "red", "bg-red-500" 등)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 각 검사별 Defect와의 관계 추가
+  incomingInspectionDefects  IncomingInspectionDefect[]
+  processInspectionDefects   ProcessInspectionDefect[]
+  shipmentInspectionDefects  ShipmentInspectionDefect[]
+}
+
+
+model UploadLog {
+  id           Int      @id @default(autoincrement())
+  userId       Int?
+  fileName     String
+  successCount Int
+  failedCount  Int
+  results      Json
+  createdAt    DateTime @default(now())
+}
+
+model Order {
+  col0         Int      @id // '0' (row index or 구분값, 반드시 존재)
+  year         Int?     // "년"
+  month        Int?     // "월"
+  day          Int?     // "일"
+  category     String?  // "분류"
+  finalorderNumber        String?  // "발주번호"
+  orderNumber  String?  // "열1"
+  code         String?  // "코드"
+  registration String?  // "등록번호"
+  col2         String?  // "열2"
+  customer     String?  // "발 주 처"
+  productName  String?  // "제 품 명"
+  partName     String?  // "부속명"
+  quantity     Int?     // " 발주수량 "
+  specification String? // "사양"
+  postProcess  String?  // "후공정"
+  production   Int?     // "생산"
+  remaining    Int?     // "잔여"
+  status       String?  // "진행"
+  sample       String?  // "견본"
+  shippingDate String?  // "출하일"
+  dDay         String?  // "D-DAY"
+  manager      String?  // "담당"
+  shipping     String?  // "출하"
+  jig          String?  // "지그"
+  registration2 String? // "등록"
+  category2    String?  // "구분"
+  unitPrice    Int?     // "단가"
+  orderAmount  Int?     // "발주금액"
+  etc          String?  // "기타"
+  category3    String?  // "구분2"
+  salesManager String?  // "매출담당"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+} 
+ 
+// 1. 수입검사
+model IncomingInspection {
+  id              Int      @id @default(autoincrement())
+  
+  // 주문 정보 직접 포함 (프론트엔드 요구사항)
+  orderNumbers    String[] // 발주번호 배열 (예: ["T00000-1", "T00000-2"])
+  client          String?  // 발주처
+  productName     String?  // 제품명
+  partName        String?  // 부속명
+  specification   String?  // 사양
+  manager         String?  // 담당자
+  
+  inspectionDate  DateTime
+  totalQty        Int
+  defectQty       Int
+  notes           String?
+  status          InspectionDraftStatus @default(draft)
+  defects         IncomingInspectionDefect[]
+  attachments     Attachment[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model IncomingInspectionDefect {
+  id            Int      @id @default(autoincrement())
+  inspection    IncomingInspection @relation(fields: [inspectionId], references: [id])
+  inspectionId  Int
+  defectType    DefectType? @relation(fields: [defectTypeId], references: [id])
+  defectTypeId  Int?
+  customType    String?
+  count         Int
+  details       Json?
+}
+
+// 2. 공정검사
+model ProcessInspection {
+  id              Int      @id @default(autoincrement())
+  
+  // 주문 정보 직접 포함 (프론트엔드 요구사항)
+  orderNumbers    String[] // 발주번호 배열 (예: ["T00000-1", "T00000-2"])
+  client          String?  // 발주처
+  productName     String?  // 제품명
+  partName        String?  // 부속명
+  specification   String?  // 사양
+  manager         String?  // 담당자
+  
+  inspectionDate  DateTime
+  totalQty        Int
+  defectQty       Int
+  notes           String?
+  status          InspectionDraftStatus @default(draft)
+  paintPrimer     String?
+  paintTopcoat    String?
+  // 추가 필드
+  line            String?
+  subLine         String?
+  peelingTest     String?
+  colorDiff       String?
+  extraWork       String?
+  lineSpeed       String?
+  spindleRatio    String?
+  uvCond          String?
+  irCond          String?
+  jig             String?
+  injectionPack   String?
+  afterPack       String?
+  rounds          ProcessInspectionRound[]
+  defects         ProcessInspectionDefect[]
+  attachments     Attachment[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ProcessInspectionRound {
+  id            Int      @id @default(autoincrement())
+  inspection    ProcessInspection @relation(fields: [inspectionId], references: [id])
+  inspectionId  Int
+  label         String
+  qty           Int
+}
+
+model ProcessInspectionDefect {
+  id            Int      @id @default(autoincrement())
+  inspection    ProcessInspection @relation(fields: [inspectionId], references: [id])
+  inspectionId  Int
+  defectType    DefectType? @relation(fields: [defectTypeId], references: [id])
+  defectTypeId  Int?
+  customType    String?
+  count         Int
+  details       Json?
+}
+
+// 3. 출하검사
+model ShipmentInspection {
+  id              Int      @id @default(autoincrement())
+  
+  // 주문 정보 직접 포함 (프론트엔드 요구사항)
+  orderNumbers    String[] // 발주번호 배열 (예: ["T00000-1", "T00000-2"])
+  client          String?  // 발주처
+  productName     String?  // 제품명
+  partName        String?  // 부속명
+  specification   String?  // 사양
+  manager         String?  // 담당자
+  
+  inspectionDate  DateTime
+  totalQty        Int
+  defectQty       Int
+  notes           String?
+  status          InspectionDraftStatus @default(draft)
+  finalPeeling    String?
+  externalCheck   Boolean?
+  rounds          ShipmentInspectionRound[]
+  attachments     Attachment[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ShipmentInspectionRound {
+  id            Int      @id @default(autoincrement())
+  inspection    ShipmentInspection @relation(fields: [inspectionId], references: [id])
+  inspectionId  Int
+  date          DateTime
+  qty           Int
+  defectQty     Int
+  workers       ShipmentInspectionWorker[]
+}
+
+model ShipmentInspectionWorker {
+  id            Int      @id @default(autoincrement())
+  round         ShipmentInspectionRound @relation(fields: [roundId], references: [id])
+  roundId       Int
+  name          String
+  defects       ShipmentInspectionDefect[]
+}
+
+model ShipmentInspectionDefect {
+  id            Int      @id @default(autoincrement())
+  worker        ShipmentInspectionWorker @relation(fields: [workerId], references: [id])
+  workerId      Int
+  defectType    DefectType? @relation(fields: [defectTypeId], references: [id])
+  defectTypeId  Int?
+  customType    String?
+  count         Int
+  details       Json?
+}
+
+// 첨부파일l Attachment {
+  id          Int     autoincremenrl         Stme    String
+eDateTime())
+  incomiplcdn
+prnId  Int?
+  nspectionId Int?ection IncomingInspectiion(fields: [incomingInspectionId], references: [id])
+  processInspection  ProcessInspection?  @relation(fields: [processInspectionId], references: [id])
+  shipmentInspection ShipmentInspection? @relation(fields: [shipmentInspectionId], references: [id])
+} 
+ 

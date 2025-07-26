@@ -1,0 +1,127 @@
+---
+alwaysApply: true
+---
+Vite-Specific Rules and Recommendations
+
+1. Optimize Asset Handling
+
+Vite's approach to assets is streamlined but benefits from specific practices.
+
+    RULE: Use Absolute Paths for Public Assets from the Root.
+
+        Place static assets that need to be served directly from the root (e.g., favicon.ico, robots.txt, images referenced in CSS or HTML) in the public/ folder.
+
+        Reference them using absolute paths starting from /. Vite serves this folder as root.
+
+        Example: If public/images/logo.png exists, reference it as <img src="/images/logo.png" />.
+
+        Why?: Vite serves the public directory directly at the root, unlike some bundlers that process all assets. This ensures correct paths in both development and production.
+
+    RULE: Import Assets Directly into JavaScript for Hashing and Optimization.
+
+        For assets (images, fonts, JSON) that are referenced within your JavaScript/TypeScript or CSS, import them directly. Vite will automatically handle hashing, optimization, and copying to the dist folder.
+
+        Example (Image):
+        JavaScript
+
+import logo from './assets/logo.png'; // Assuming logo.png is in src/assets
+function MyComponent() {
+  return <img src={logo} alt="Logo" />;
+}
+
+Example (JSON):
+JavaScript
+
+        import config from './config.json';
+        console.log(config.apiUrl);
+
+        Why?: This allows Vite to leverage its asset pipeline, including efficient caching (due to content hashing) and optimized delivery.
+
+2. Leverage Fast HMR with ESM-first Approach
+
+Vite's speed comes from its native ES module (ESM) approach and Hot Module Replacement (HMR).
+
+    RULE: Favor Native ES Modules (ESM) Over CommonJS.
+
+        Write your code using import and export statements. Vite is built on ESM, which allows it to provide instant server start and fast HMR.
+
+        Why?: Vite serves modules directly to the browser during development, avoiding the need for a full bundle step. This relies on the browser's native ESM capabilities. CommonJS modules (require(), module.exports) need to be converted, which can slow down dev server startup.
+
+    RULE: Understand and Utilize Vite's HMR Boundaries.
+
+        Vite's HMR works by replacing only the changed module and its direct dependents. This is incredibly fast.
+
+        Why?: Be aware that changes that break module boundaries (e.g., modifying global scripts or deeply shared utility files) might cause a full page reload. This is usually rare with well-structured React components. Focus on maintaining clear module dependencies to maximize HMR efficiency.
+
+3. Configure Aliases for Cleaner Imports
+
+While not unique to Vite, configuring path aliases is highly beneficial and works seamlessly with Vite.
+
+    RULE: Set Up Path Aliases for Absolute Imports.
+
+        Use jsconfig.json (for JavaScript) or tsconfig.json (for TypeScript) to define aliases for frequently used directories like src/components, src/features, src/utils.
+
+        Example (jsconfig.json):
+        JSON
+
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@features/*": ["src/features/*"],
+      "@utils/*": ["src/utils/*"]
+    }
+  }
+}
+
+Example (Usage):
+JavaScript
+
+        import Button from '@/components/Button'; // Instead of ../../components/Button
+        import { useAuth } from '@features/auth/hooks/useAuth';
+
+        Why?: This makes your import statements cleaner, easier to read, and less prone to errors when refactoring file paths (e.g., moving a component deep inside a folder structure).
+
+4. Understand and Use Environment Variables
+
+Vite handles environment variables in a specific way that's different from some other tools.
+
+    RULE: Prefix Client-Side Environment Variables with VITE_.
+
+        For environment variables that need to be exposed to the client-side code (e.g., API keys for client-side use), they must be prefixed with VITE_.
+
+        Example (.env file):
+
+        VITE_API_URL=http://localhost:8080/api
+        DB_PASSWORD=mysecretpassword # This will NOT be exposed to client-side
+
+        Access in Code:
+        JavaScript
+
+        console.log(import.meta.env.VITE_API_URL);
+        // console.log(import.meta.env.DB_PASSWORD); // This would be undefined on client-side
+
+        Why?: This is a security feature. Vite explicitly exposes only variables prefixed with VITE_ to the client bundle, preventing sensitive server-side variables from accidentally leaking to the frontend.
+
+5. Be Mindful of Build Output and Compatibility
+
+While Vite handles builds efficiently, specific considerations ensure maximum compatibility and performance.
+
+    RULE: Configure Browser Compatibility (Browserslist).
+
+        If you need to support older browsers, use a browserslist configuration (often in package.json) to tell Vite/Rollup which browser targets to compile for.
+
+        Example (package.json):
+        JSON
+
+{
+  "browserslist": [
+    "last 2 versions",
+    "not dead",
+    "> 0.2%"
+  ]
+}
+
+Why?: Vite's default build might target modern browsers for optimal performance. Specifying browserslist ensures your bundled code is compatible with your target audience's browsers.
