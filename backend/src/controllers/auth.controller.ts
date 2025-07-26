@@ -48,7 +48,15 @@ export class AuthController {
     description: '잘못된 사용자명 또는 비밀번호입니다.' 
   })
   async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
-    return this.authService.login(loginDto);
+    console.log('🔐 로그인 요청 받음:', { username: loginDto.username });
+    try {
+      const result = await this.authService.login(loginDto);
+      console.log('✅ 로그인 성공:', { username: loginDto.username });
+      return result;
+    } catch (error) {
+      console.log('❌ 로그인 실패:', { username: loginDto.username, error: error.message });
+      throw error;
+    }
   }
 
   @Get('me')
@@ -127,4 +135,4 @@ export class AuthController {
   async logout(@Request() req: { user: User }): Promise<{ message: string }> {
     return this.authService.logout(req.user.id);
   }
-} 
+}

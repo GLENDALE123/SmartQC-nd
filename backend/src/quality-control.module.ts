@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 // import { QualityHistoryController } from './controllers/quality-history.controller';
-// import { AuthController } from './controllers/auth.controller';
-// import { AuthService } from './services/auth.service';
+import { AuthController } from './controllers/auth.controller';
+import { AuthService } from './services/auth.service';
 // import { QualityHistoryService } from './services/quality-history.service';
 import { PrismaService } from './prisma.service';
 // import { UploadController } from './controllers/upload.controller';
@@ -44,7 +44,7 @@ import { UploadsController } from './controllers/uploads.controller';
     // UploadController,
     // UploadLogController,
     DefectTypesController,
-    // AuthController,
+    AuthController,
     // InspectionBatchController,
     InspectionController,
     ImageUploadController,
@@ -60,11 +60,11 @@ import { UploadsController } from './controllers/uploads.controller';
     // ExcelOrderService,
     DefectTypesService,
     ColorValidationService,
-    // AuthService,
+    AuthService,
     SharedFolderService,
     OrderService,
     UnifiedInspectionService,
     FileValidationService,
   ],
 })
-export class QualityControlModule {} 
+export class QualityControlModule {}

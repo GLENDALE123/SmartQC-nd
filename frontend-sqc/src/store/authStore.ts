@@ -1,10 +1,17 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { AuthState, User, LoginCredentials } from '@/types/auth'
+import { User, LoginRequest, AuthResponse } from '@/types'
 import { authApi } from '@/api/auth'
 
+interface AuthState {
+  user: User | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
+}
+
 interface AuthStore extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>
+  login: (credentials: LoginRequest) => Promise<void>
   logout: () => void
   clearError: () => void
   setLoading: (loading: boolean) => void
@@ -20,7 +27,7 @@ export const useAuthStore = create<AuthStore>()(
       isLoading: false,
       error: null,
       
-      login: async (credentials: LoginCredentials) => {
+      login: async (credentials: LoginRequest) => {
         set({ isLoading: true, error: null })
         
         try {

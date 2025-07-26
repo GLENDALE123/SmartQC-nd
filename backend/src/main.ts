@@ -17,7 +17,12 @@ async function bootstrap() {
   app.use(compression());
 
   // CORS 설정
-  app.enableCors();
+  app.enableCors({
+    origin: ['http://localhost:5174', 'http://localhost:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   // 글로벌 파이프 설정
   app.useGlobalPipes(
