@@ -44,7 +44,7 @@ export class ProcessInspectionController {
 
         // 경고가 있는 경우 로그 출력
         if (validationResult.warnings.length > 0) {
-          console.warn('File validation warnings:', validationResult.warnings);
+          // 파일 검증 경고가 있을 경우 별도 처리
         }
       }
     }
@@ -75,4 +75,4 @@ export class ProcessInspectionController {
   async remove(@Param('id') id: string) {
     return this.service.remove(Number(id));
   }
-} 
+}

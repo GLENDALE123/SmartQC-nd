@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export default function NotificationSettings() {
   const [notifications, setNotifications] = useState({

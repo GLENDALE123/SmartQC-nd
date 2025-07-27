@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { orderApi, OrderInfoResponseDto } from "@/api/orders"
 
 interface OrderInfo {
   orderNumber: string
@@ -84,51 +84,50 @@ export function BasicInfoForm({ onBasicInfoChange }: BasicInfoFormProps) {
     }
     }
 
-  // 발주 정보 가져오기 (시뮬레이션)
+  // 발주 정보 가져오기 (실제 API 호출)
   const fetchOrderInfo = async (orderNumber: string): Promise<OrderInfo> => {
-    // 실제로는 API 호출
-    await new Promise(resolve => setTimeout(resolve, 500)) // 로딩 시뮬레이션
-    
-    // 임시 데이터 (실제로는 API에서 가져옴)
-    const mockData: { [key: string]: OrderInfo } = {
-      "T00000-1": {
-        orderNumber: "T00000-1",
-        client: "승보",
-        productName: "120ML원형",
-        partName: "본체",
-        specification: "120ML, 원형, 투명",
-        manager: "김담당"
-      },
-      "T00000-2": {
-        orderNumber: "T00000-2",
-        client: "코스메카코리아",
-        productName: "120ML원형",
-        partName: "본체",
-        specification: "120ML, 원형, 투명",
-        manager: "이담당"
-      },
-      "T12345-6": {
-        orderNumber: "T12345-6",
-        client: "승보",
-        productName: "200ML사각",
-        partName: "뚜껑",
-        specification: "200ML, 사각, 불투명",
-        manager: "박담당"
+    try {
+      const response = await orderApi.getByOrderNumber(orderNumber);
+      
+      if (response.success && response.data) {
+        const orderData: OrderInfoResponseDto = response.data;
+        
+        return {
+          orderNumber: orderData.finalorderNumber || orderNumber,
+          client: orderData.customer || "정보 없음", // customer 필드 사용
+          productName: orderData.productName || "정보 없음", 
+          partName: orderData.partName || "정보 없음",
+          specification: orderData.specification || "정보 없음",
+          manager: orderData.manager || "정보 없음"
+        };
+      } else {
+        // API에서 데이터를 찾지 못한 경우
+        return {
+          orderNumber,
+          client: "정보 없음",
+          productName: "정보 없음",
+          partName: "정보 없음", 
+          specification: "정보 없음",
+          manager: "정보 없음"
+        };
       }
-    }
-    
-    return mockData[orderNumber] || {
-      orderNumber,
-      client: "정보 없음",
-      productName: "정보 없음",
-      partName: "정보 없음",
-      specification: "정보 없음",
-      manager: "정보 없음"
+    } catch (error) {
+      console.error(`발주번호 ${orderNumber} 정보 가져오기 실패:`, error);
+      
+      // 에러 발생 시 기본값 반환
+      return {
+        orderNumber,
+        client: "정보 없음",
+        productName: "정보 없음",
+        partName: "정보 없음",
+        specification: "정보 없음", 
+        manager: "정보 없음"
+      };
     }
   }
 
   // 모든 발주 정보 가져오기
-  const fetchAllOrderInfos = async () => {
+  const fetchAllOrderInfos = useCallback(async () => {
     if (orderNumbers.length === 0) {
       setOrderInfos([])
       return
@@ -145,20 +144,20 @@ export function BasicInfoForm({ onBasicInfoChange }: BasicInfoFormProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [orderNumbers])
 
   // 발주번호가 변경될 때마다 정보 가져오기
   useEffect(() => {
     fetchAllOrderInfos()
   }, [orderNumbers])
 
-  // 부모 컴포넌트에 데이터 전달
+  // 부모 컴포넌트에 데이터 전달 - onBasicInfoChange를 의존성에서 제거
   useEffect(() => {
     onBasicInfoChange({
       orderNumbers,
       orderInfos
     })
-  }, [orderNumbers, orderInfos, onBasicInfoChange])
+  }, [orderNumbers, orderInfos])
 
   // 중복 제거된 값들 계산
   const getUniqueValues = (field: keyof OrderInfo) => {
@@ -287,4 +286,4 @@ export function BasicInfoForm({ onBasicInfoChange }: BasicInfoFormProps) {
       </CardContent>
     </Card>
   )
-} 
+}

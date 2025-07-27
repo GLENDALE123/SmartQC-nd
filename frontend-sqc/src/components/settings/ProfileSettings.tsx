@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,14 +15,38 @@ interface ProfileSettingsProps {
 
 export default function ProfileSettings({ user }: ProfileSettingsProps) {
   const [editMode, setEditMode] = useState(false);
-  const { user: currentUser, updateUser } = useAuth();
+  const { user: currentUser, updateUser, isLoading } = useAuth();
+  
+  // currentUser를 우선적으로 사용하고, 없으면 prop으로 받은 user 사용
+  const activeUser = currentUser || user;
+  
   const [form, setForm] = useState({
-    name: user?.name || '',
-    position: user?.position || '',
-    jobTitle: user?.jobTitle || '',
-    inspectionType: user?.inspectionType || 'all',
-    mainProcessLine: user?.mainProcessLine || '',
+    name: activeUser?.name || '',
+    rank: activeUser?.rank || '',
+    position: activeUser?.position || '',
+    inspectionType: activeUser?.inspectionType || 'all',
+    processLine: activeUser?.processLine || '',
   });
+
+  // 디버깅을 위한 로그
+  console.log('ProfileSettings - currentUser:', currentUser);
+  console.log('ProfileSettings - prop user:', user);
+  console.log('ProfileSettings - activeUser:', activeUser);
+  console.log('ProfileSettings - form:', form);
+  console.log('ProfileSettings - isLoading:', isLoading);
+
+  // activeUser가 변경될 때마다 폼 업데이트
+  useEffect(() => {
+    if (activeUser) {
+      setForm({
+        name: activeUser.name || '',
+        rank: activeUser.rank || '',
+        position: activeUser.position || '',
+        inspectionType: activeUser.inspectionType || 'all',
+        processLine: activeUser.processLine || '',
+      });
+    }
+  }, [activeUser]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -34,30 +58,24 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
 
 
 
-  const handleSave = () => {
-    // "select" 값을 null로 변환하여 백엔드로 전송
-    const dataToSend = {
-      ...form,
-      position: form.position === 'select' ? null : form.position,
-      jobTitle: form.jobTitle === 'select' ? null : form.jobTitle,
-      inspectionType: form.inspectionType,
-      mainProcessLine: form.mainProcessLine === 'select' ? null : form.mainProcessLine,
-    };
-    
-    console.log('저장할 데이터:', dataToSend);
-    
-    // 실제 사용자 정보 업데이트
-    if (currentUser) {
-      updateUser({
-        name: form.name,
-        position: form.position === 'select' ? undefined : form.position,
-        jobTitle: form.jobTitle === 'select' ? undefined : form.jobTitle,
-        inspectionType: form.inspectionType,
-        mainProcessLine: form.mainProcessLine === 'select' ? undefined : form.mainProcessLine,
-      });
+  const handleSave = async () => {
+    try {
+      // 실제 사용자 정보 업데이트
+      if (currentUser) {
+        await updateUser({
+          name: form.name,
+          rank: form.rank === 'select' ? undefined : form.rank,
+          position: form.position === 'select' ? undefined : form.position,
+          inspectionType: form.inspectionType,
+          processLine: form.processLine === 'select' ? undefined : form.processLine,
+        });
+      }
+      
+      setEditMode(false);
+    } catch (error) {
+      console.error('프로필 업데이트 실패:', error);
+      // 에러 처리 (필요시 토스트 메시지 등 추가)
     }
-    
-    setEditMode(false);
   };
 
   return (
@@ -68,7 +86,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             <UserIcon className="w-5 h-5" />
             프로필 정보
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={() => setEditMode((v) => !v)}>
+          <Button variant="outline" size="sm" onClick={() => setEditMode((v) => !v)} disabled={isLoading || !activeUser}>
             <Edit2 className="w-4 h-4 mr-2" />
             {editMode ? '취소' : '수정'}
           </Button>
@@ -79,8 +97,17 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
           기본 사용자 정보를 확인하고 수정할 수 있습니다.
         </div>
 
-        <form className="space-y-6">
-          {/* 기본 정보 */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-muted-foreground">사용자 정보를 불러오는 중...</div>
+          </div>
+        ) : !activeUser ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-muted-foreground">사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.</div>
+          </div>
+        ) : (
+          <form className="space-y-6">
+            {/* 기본 정보 */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-muted-foreground">기본 정보</h3>
             <div className="space-y-4">
@@ -96,10 +123,10 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="position" className="text-sm font-medium">직급</Label>
+                <Label htmlFor="rank" className="text-sm font-medium">직급</Label>
                 <Select
-                  value={form.position}
-                  onValueChange={(value) => handleSelectChange('position', value)}
+                  value={form.rank}
+                  onValueChange={(value) => handleSelectChange('rank', value)}
                   disabled={!editMode}
                 >
                   <SelectTrigger>
@@ -120,10 +147,10 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="jobTitle" className="text-sm font-medium">직책</Label>
+                <Label htmlFor="position" className="text-sm font-medium">직책</Label>
                 <Select
-                  value={form.jobTitle}
-                  onValueChange={(value) => handleSelectChange('jobTitle', value)}
+                  value={form.position}
+                  onValueChange={(value) => handleSelectChange('position', value)}
                   disabled={!editMode}
                 >
                   <SelectTrigger>
@@ -142,7 +169,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
           </div>
 
           {/* 검사 타입 설정 - 분임조일 때만 표시 */}
-          {form.jobTitle === 'team_leader' && (
+          {form.position === 'team_leader' && (
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground">검사 타입 설정</h3>
               <div className="space-y-2">
@@ -168,10 +195,10 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
               {/* 공정검사일 때만 주 공정라인 표시 */}
               {form.inspectionType === 'process' && (
                 <div className="space-y-2">
-                  <Label htmlFor="mainProcessLine" className="text-sm font-medium">주 공정라인</Label>
+                  <Label htmlFor="processLine" className="text-sm font-medium">주 공정라인</Label>
                   <Select
-                    value={form.mainProcessLine}
-                    onValueChange={(value) => handleSelectChange('mainProcessLine', value)}
+                    value={form.processLine}
+                    onValueChange={(value) => handleSelectChange('processLine', value)}
                     disabled={!editMode}
                   >
                     <SelectTrigger>
@@ -242,8 +269,9 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
               </Button>
             </div>
           )}
-        </form>
+          </form>
+        )}
       </CardContent>
     </Card>
   );
-} 
+}

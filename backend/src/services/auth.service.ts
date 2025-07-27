@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma.service';
 import { User, UserRole } from '@prisma/client';
-import { LoginDto, RegisterDto, AuthResponseDto, JwtPayload, RefreshTokenDto } from '../dtos/auth.dto';
+import { LoginDto, RegisterDto, AuthResponseDto, JwtPayload, RefreshTokenDto, UpdateProfileDto } from '../dtos/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -68,6 +68,8 @@ export class AuthService {
         inspectionType: user.inspectionType,
         processLine: user.processLine,
         authType: user.authType,
+        rank: user.rank,
+        position: user.position,
         lastLoginAt: user.lastLoginAt,
       },
     };
@@ -132,6 +134,8 @@ export class AuthService {
         inspectionType: updatedUser.inspectionType,
         processLine: updatedUser.processLine,
         authType: updatedUser.authType,
+        rank: updatedUser.rank,
+        position: updatedUser.position,
         lastLoginAt: updatedUser.lastLoginAt,
       },
     };
@@ -277,6 +281,46 @@ export class AuthService {
   }
 
   /**
+   * 프로필 업데이트
+   * @param userId 사용자 ID
+   * @param updateProfileDto 업데이트할 프로필 정보
+   * @returns 업데이트된 사용자 정보
+   */
+  async updateProfile(userId: number, updateProfileDto: UpdateProfileDto): Promise<any> {
+    // 사용자 검증
+    await this.validateUser(userId);
+
+    // 프로필 업데이트
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(updateProfileDto.name && { name: updateProfileDto.name }),
+        ...(updateProfileDto.inspectionType && { inspectionType: updateProfileDto.inspectionType }),
+        ...(updateProfileDto.processLine !== undefined && { processLine: updateProfileDto.processLine }),
+        ...(updateProfileDto.rank !== undefined && { rank: updateProfileDto.rank }),
+        ...(updateProfileDto.position !== undefined && { position: updateProfileDto.position }),
+        updatedAt: new Date(),
+      },
+    });
+
+    return {
+      id: updatedUser.id,
+      username: updatedUser.username,
+      name: updatedUser.name,
+      role: updatedUser.role.toString(),
+      isActive: updatedUser.isActive,
+      inspectionType: updatedUser.inspectionType,
+      processLine: updatedUser.processLine,
+      authType: updatedUser.authType,
+      rank: updatedUser.rank,
+      position: updatedUser.position,
+      lastLoginAt: updatedUser.lastLoginAt,
+      createdAt: updatedUser.createdAt,
+      updatedAt: updatedUser.updatedAt,
+    };
+  }
+
+  /**
    * 로그아웃 처리
    * 현재는 stateless JWT를 사용하므로 클라이언트에서 토큰을 삭제하도록 안내
    * 향후 토큰 블랙리스트 기능을 추가할 수 있음
@@ -294,4 +338,4 @@ export class AuthService {
       message: '성공적으로 로그아웃되었습니다. 클라이언트에서 토큰을 삭제해주세요.',
     };
   }
-} 
+}

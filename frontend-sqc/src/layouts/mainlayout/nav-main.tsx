@@ -1,6 +1,7 @@
 "use client"
 
 import { IconCirclePlusFilled, type Icon } from "@tabler/icons-react"
+import { Link } from "react-router-dom"
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -48,10 +49,10 @@ export function NavMain({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild tooltip={item.title} isActive={item.isActive}>
-                <a href={item.url}>
+                <Link to={item.url}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -59,4 +60,4 @@ export function NavMain({
       </SidebarGroupContent>
     </SidebarGroup>
   )
-} 
+}

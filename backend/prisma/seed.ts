@@ -15,6 +15,8 @@ async function main() {
       role: 'admin' as const,
       inspectionType: 'all',
       processLine: null,
+      rank: '부장',
+      position: '시스템관리자',
     },
     {
       username: 'inspector1',
@@ -23,6 +25,8 @@ async function main() {
       role: 'inspector' as const,
       inspectionType: 'incoming',
       processLine: 'LINE-A',
+      rank: '대리',
+      position: '품질검사원',
     },
     {
       username: 'manager1',
@@ -31,6 +35,8 @@ async function main() {
       role: 'manager' as const,
       inspectionType: 'all',
       processLine: null,
+      rank: '과장',
+      position: '품질관리팀장',
     },
     {
       username: 'operator1',
@@ -39,6 +45,8 @@ async function main() {
       role: 'operator' as const,
       inspectionType: 'process',
       processLine: 'LINE-B',
+      rank: '사원',
+      position: '생산작업자',
     },
   ];
 
@@ -65,6 +73,9 @@ async function main() {
         role: userData.role,
         inspectionType: userData.inspectionType,
         processLine: userData.processLine,
+        rank: userData.rank,
+        position: userData.position,
+        authType: 'local',
         isActive: true,
       },
     });

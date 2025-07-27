@@ -25,6 +25,8 @@ describe('AuthController', () => {
     inspectionType: 'incoming',
     processLine: 'line1',
     authType: 'local',
+    rank: '사원',
+    position: '검사원',
     lastLoginAt: new Date(),
     createdAt: new Date(),
     updatedAt: new Date(),

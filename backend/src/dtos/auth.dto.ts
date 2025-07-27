@@ -39,6 +39,45 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   processLine?: string;
+
+  @ApiProperty({ description: '직급', required: false })
+  @IsOptional()
+  @IsString()
+  rank?: string;
+
+  @ApiProperty({ description: '직책', required: false })
+  @IsOptional()
+  @IsString()
+  position?: string;
+}
+
+export class UpdateProfileDto {
+  @ApiProperty({ description: '이름', required: false })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  name?: string;
+
+  @ApiProperty({ description: '검사 유형', required: false, enum: ['incoming', 'process', 'shipment', 'all'] })
+  @IsOptional()
+  @IsString()
+  @IsIn(['incoming', 'process', 'shipment', 'all'])
+  inspectionType?: string;
+
+  @ApiProperty({ description: '공정라인', required: false })
+  @IsOptional()
+  @IsString()
+  processLine?: string;
+
+  @ApiProperty({ description: '직급', required: false })
+  @IsOptional()
+  @IsString()
+  rank?: string;
+
+  @ApiProperty({ description: '직책', required: false })
+  @IsOptional()
+  @IsString()
+  position?: string;
 }
 
 export class AuthResponseDto {
@@ -58,6 +97,8 @@ export class AuthResponseDto {
     inspectionType?: string;
     processLine?: string;
     authType?: string;
+    rank?: string;
+    position?: string;
     lastLoginAt?: Date;
   };
 }

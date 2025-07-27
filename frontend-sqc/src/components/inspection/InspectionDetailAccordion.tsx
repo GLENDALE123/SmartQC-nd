@@ -1,6 +1,5 @@
 "use client"
 
-import React from 'react'
 import { IconPhoto, IconFileText } from '@tabler/icons-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Card, CardContent } from '@/components/ui/card'
@@ -161,4 +160,4 @@ export function InspectionDetailAccordion({ inspection }: InspectionDetailAccord
       </AccordionItem>
     </Accordion>
   )
-} 
+}

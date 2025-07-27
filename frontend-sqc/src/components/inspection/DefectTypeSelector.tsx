@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { IconPlus, IconX, IconEdit, IconBug, IconBallpen, IconBallpenFilled } from "@tabler/icons-react"
+import { IconPlus, IconX, IconEdit, IconBug } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
 import { Combobox } from "@/components/ui/combobox"
@@ -28,7 +28,6 @@ interface DefectItem {
 
 interface DefectTypeSelectorProps {
   defectTypes: DefectType[]
-  onAddDefect?: (defectType: string, count: number, details: string) => void
   onTotalDefectChange?: (totalDefect: number) => void
   placeholder?: string
   totalQty?: number
@@ -36,7 +35,6 @@ interface DefectTypeSelectorProps {
 
 export function DefectTypeSelector({ 
   defectTypes, 
-  onAddDefect: _onAddDefect, 
   onTotalDefectChange,
   placeholder = "불량유형 선택",
   totalQty = 0
@@ -95,28 +93,6 @@ export function DefectTypeSelector({
       onTotalDefectChange(totalDefectQty)
     }
   }, [totalDefectQty])
-
-  // 컴포넌트 내부에 추가
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [modalDefectId, setModalDefectId] = useState<string | null>(null);
-  const [modalDetail, setModalDetail] = useState("");
-
-  function openDetailModal(defectId: string) {
-    setModalDefectId(defectId);
-    const defect = defectRows.find(d => d.id === defectId);
-    setModalDetail(defect?.details || "");
-    setDetailModalOpen(true);
-  }
-  function closeDetailModal() {
-    setDetailModalOpen(false);
-    setModalDefectId(null);
-  }
-  function saveDetailModal() {
-    if (modalDefectId) {
-      updateRow(modalDefectId, 'details', modalDetail);
-    }
-    closeDetailModal();
-  }
 
   return (
     <div className="space-y-4">
@@ -200,37 +176,9 @@ export function DefectTypeSelector({
             )}
           </div>
 
-          {/* 모바일: 발견+상세내용 아이콘 버튼을 flex로 1:1 배치 */}
-          {defect.isSelected && (
-            <div className="flex gap-2 sm:hidden">
-              <div className="flex-1">
-                <FloatingLabel
-                  label="발견"
-                  size="medium"
-                  type="number"
-                  value={defect.count || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    updateRow(defect.id, 'count', value === "" ? null : Number(value) || null);
-                  }}
-                  min="0"
-                />
-              </div>
-              <div className="flex-1 flex items-center justify-center">
-                <button type="button" onClick={() => openDetailModal(defect.id)} className="p-2 text-gray-500 hover:text-blue-600">
-                  {defect.details && defect.details.trim() !== '' ? (
-                    <IconBallpenFilled size={24} />
-                  ) : (
-                    <IconBallpen size={24} />
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* 데스크탑: 기존 레이아웃 유지 */}
           {defect.isSelected && (
-            <div className="hidden sm:flex gap-2 w-full">
+            <div className="flex gap-2 w-full">
               <div className="w-14 sm:w-20">
                 <FloatingLabel
                   label="발견"
@@ -287,25 +235,6 @@ export function DefectTypeSelector({
         <IconPlus className="h-4 w-4" />
         불량 유형 추가
       </Button>
-
-      {detailModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg p-4 w-11/12 max-w-md">
-            <h2 className="text-lg font-semibold mb-2">상세내용 입력</h2>
-            <textarea
-              className="w-full border rounded p-2 mb-4"
-              rows={4}
-              value={modalDetail}
-              onChange={e => setModalDetail(e.target.value)}
-              placeholder="상세 내용을 입력하세요"
-            />
-            <div className="flex justify-end gap-2">
-              <button onClick={closeDetailModal} className="px-3 py-1 rounded bg-gray-200">취소</button>
-              <button onClick={saveDetailModal} className="px-3 py-1 rounded bg-blue-600 text-white">저장</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
-} 
+}

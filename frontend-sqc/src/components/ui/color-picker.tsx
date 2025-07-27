@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
-import { IconCheck, IconX } from "@tabler/icons-react"
+import { IconCheck } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
@@ -48,7 +48,6 @@ export function ColorPicker({
   onChange,
   presetColors = DEFAULT_PRESET_COLORS,
   showCustomPicker = true,
-  className,
   triggerClassName,
   contentClassName,
   size = "md",
@@ -414,4 +413,4 @@ export function ColorPicker({
       </PopoverContent>
     </Popover>
   )
-} 
+}

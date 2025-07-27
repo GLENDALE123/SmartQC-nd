@@ -5,9 +5,9 @@ import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth.service';
 // import { QualityHistoryService } from './services/quality-history.service';
 import { PrismaService } from './prisma.service';
-// import { UploadController } from './controllers/upload.controller';
-// import { UploadLogService } from './services/upload-log.service';
-// import { UploadLogController } from './controllers/upload-log.controller';
+import { UploadController } from './controllers/upload.controller';
+import { UploadLogService } from './services/upload-log.service';
+import { UploadLogController } from './controllers/upload-log.controller';
 
 import { forwardRef } from '@nestjs/common';
 import { DefectTypesController } from './controllers/defect-types.controller';
@@ -28,6 +28,8 @@ import { OrderService } from './services/order.service';
 import { UnifiedInspectionService } from './services/unified-inspection.service';
 import { FileValidationService } from './services/file-validation.service';
 import { UploadsController } from './controllers/uploads.controller';
+import { OptimizedUploadController } from './controllers/optimized-upload.controller';
+import { UploadProgressService } from './services/upload-progress.service';
 
 @Module({
   imports: [
@@ -41,14 +43,15 @@ import { UploadsController } from './controllers/uploads.controller';
     ProcessInspectionController,
     ShipmentInspectionController,
     // QualityHistoryController,
-    // UploadController,
-    // UploadLogController,
+    UploadController,
+    UploadLogController,
     DefectTypesController,
     AuthController,
     // InspectionBatchController,
     InspectionController,
     ImageUploadController,
     OrderController,
+    OptimizedUploadController,
   ],
   providers: [
     IncomingInspectionService,
@@ -56,7 +59,7 @@ import { UploadsController } from './controllers/uploads.controller';
     ShipmentInspectionService,
     // QualityHistoryService,
     PrismaService,
-    // UploadLogService,
+    UploadLogService,
     // ExcelOrderService,
     DefectTypesService,
     ColorValidationService,
@@ -65,6 +68,7 @@ import { UploadsController } from './controllers/uploads.controller';
     OrderService,
     UnifiedInspectionService,
     FileValidationService,
+    UploadProgressService,
   ],
 })
 export class QualityControlModule {}

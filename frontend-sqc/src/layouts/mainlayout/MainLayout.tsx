@@ -1,5 +1,5 @@
 import { FileText } from "lucide-react"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useLocation, useNavigate, Link } from "react-router-dom"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -31,7 +31,7 @@ import { EnvironmentDebuggerSidebar } from "@/components/EnvironmentDebuggerSide
 import { useAuth } from "@/hooks/useAuth"
 import { useState } from "react"
 import React from "react"
-import { IconCirclePlus, IconLogout, IconUser, IconSettings } from "@tabler/icons-react"
+import { IconCirclePlus, IconLogout, IconSettings } from "@tabler/icons-react"
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -85,6 +85,27 @@ export function MainLayout({ children }: MainLayoutProps) {
       ]
     }
     
+    if (pathname === '/excel-import') {
+      return [
+        { title: 'SmartQC', href: '/', icon: FileText },
+        { title: '엑셀 가져오기', href: null, isCurrent: true }
+      ]
+    }
+    
+    if (pathname === '/reports') {
+      return [
+        { title: 'SmartQC', href: '/', icon: FileText },
+        { title: '보고서', href: null, isCurrent: true }
+      ]
+    }
+    
+    if (pathname === '/settings') {
+      return [
+        { title: 'SmartQC', href: '/', icon: FileText },
+        { title: '설정', href: null, isCurrent: true }
+      ]
+    }
+    
     // 기본값
     return [
       { title: 'SmartQC', href: '/', icon: FileText },
@@ -135,9 +156,11 @@ export function MainLayout({ children }: MainLayoutProps) {
                   <React.Fragment key={index}>
                     <BreadcrumbItem className="flex-shrink-0">
                       {crumb.href ? (
-                        <BreadcrumbLink href={crumb.href} className="flex items-center">
-                          {crumb.icon && <crumb.icon className="h-4 w-4 mr-1 flex-shrink-0" />}
-                          <span className="truncate">{crumb.title}</span>
+                        <BreadcrumbLink asChild className="flex items-center">
+                          <Link to={crumb.href}>
+                            {crumb.icon && <crumb.icon className="h-4 w-4 mr-1 flex-shrink-0" />}
+                            <span className="truncate">{crumb.title}</span>
+                          </Link>
                         </BreadcrumbLink>
                       ) : (
                         <BreadcrumbPage className="truncate">{crumb.title}</BreadcrumbPage>
@@ -209,4 +232,4 @@ export function MainLayout({ children }: MainLayoutProps) {
       </SidebarInset>
     </SidebarProvider>
   )
-} 
+}

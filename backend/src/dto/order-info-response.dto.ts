@@ -4,8 +4,23 @@ export class OrderInfoResponseDto {
   @ApiProperty({ description: '주문 ID' })
   col0: number;
 
+  @ApiProperty({ description: '년도', required: false })
+  year?: number | null;
+
+  @ApiProperty({ description: '월', required: false })
+  month?: number | null;
+
+  @ApiProperty({ description: '일', required: false })
+  day?: number | null;
+
+  @ApiProperty({ description: '분류', required: false })
+  category?: string | null;
+
   @ApiProperty({ description: '발주번호', required: false })
   orderNumber?: string | null;
+
+  @ApiProperty({ description: '코드', required: false })
+  code?: string | null;
 
   @ApiProperty({ description: '최종 발주번호', required: false })
   finalorderNumber?: string | null;

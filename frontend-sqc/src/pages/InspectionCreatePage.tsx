@@ -140,7 +140,6 @@ export function InspectionCreatePage({ type }: InspectionCreatePageProps) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
-  const [orderInfos, setOrderInfos] = useState<OrderInfo[]>([])
   const [hasInitialized, setHasInitialized] = useState(false)
   const [recentInspections, setRecentInspections] = useState<RecentInspection[]>(MOCK_RECENT_INSPECTIONS)
   // const [isLoadingInspections, setIsLoadingInspections] = useState(false) // API 연동 시 사용
@@ -244,8 +243,6 @@ export function InspectionCreatePage({ type }: InspectionCreatePageProps) {
     orderNumbers: string[]
     orderInfos: OrderInfo[]
   }) => {
-    setOrderInfos(data.orderInfos)
-    
     // 발주 정보가 변경되면 해당 정보로 최근 검사 기록 필터링 (목업 데이터 사용)
     if (data.orderInfos.length > 0) {
       const firstOrder = data.orderInfos[0]
@@ -317,10 +314,10 @@ export function InspectionCreatePage({ type }: InspectionCreatePageProps) {
                 
                 {/* 두 번째 컴포넌트: 검사 유형별 작성폼 */}
                 {activeTab === "incoming" && (
-                  <IncomingInspectionForm orderInfos={orderInfos} />
+                  <IncomingInspectionForm />
                 )}
                 {activeTab === "process" && (
-                  <ProcessInspectionForm orderInfos={orderInfos} />
+                  <ProcessInspectionForm />
                 )}
                 {activeTab === "shipment" && (
                   <ShipmentInspectionForm />
@@ -344,4 +341,4 @@ export function InspectionCreatePage({ type }: InspectionCreatePageProps) {
       </div>
     </div>
   )
-} 
+}

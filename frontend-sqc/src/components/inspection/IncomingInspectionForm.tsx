@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
 import { IconPhoto } from "@tabler/icons-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,15 +15,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { DefectTypeSelector } from "./DefectTypeSelector"
 import { cn } from "@/lib/utils"
 
-interface OrderInfo {
-  orderNumber: string
-  client: string
-  productName: string
-  partName: string
-  specification: string
-  manager: string
-}
-
 interface DefectType {
   id: number
   name: string
@@ -32,10 +23,6 @@ interface DefectType {
 }
 
 
-
-interface IncomingInspectionFormProps {
-  orderInfos: OrderInfo[]
-}
 
 // 샘플 불량유형 데이터 (실제로는 API에서 가져올 예정)
 const SAMPLE_DEFECT_TYPES: DefectType[] = [
@@ -46,16 +33,11 @@ const SAMPLE_DEFECT_TYPES: DefectType[] = [
   { id: 5, name: "포장 불량", description: "포장 상태 불량", color: "bg-orange-500" },
 ]
 
-export function IncomingInspectionForm({ orderInfos }: IncomingInspectionFormProps) {
+export function IncomingInspectionForm() {
   const [inspectionDate, setInspectionDate] = useState<Date>(new Date())
   const [totalQty, setTotalQty] = useState<number>(0)
   const [notes, setNotes] = useState<string>("")
   const [photos, setPhotos] = useState<File[]>([])
-
-  // 불량유형 추가
-  const addDefect = useCallback((defectTypeName: string, count: number, details: string) => {
-    console.log('불량유형 추가:', { defectTypeName, count, details })
-  }, [])
 
   // 사진 업로드 핸들러
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,7 +113,7 @@ export function IncomingInspectionForm({ orderInfos }: IncomingInspectionFormPro
         {/* 불량유형 섹션 */}
         <DefectTypeSelector
           defectTypes={SAMPLE_DEFECT_TYPES}
-          onAddDefect={addDefect}
+          onTotalDefectChange={(totalDefect) => console.log('총 불량수:', totalDefect)}
           totalQty={totalQty}
         />
 
@@ -218,4 +200,4 @@ export function IncomingInspectionForm({ orderInfos }: IncomingInspectionFormPro
       </CardContent>
     </Card>
   )
-} 
+}

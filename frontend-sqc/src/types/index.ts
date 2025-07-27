@@ -1,10 +1,20 @@
+// 기본 타입들
+export * from './api';
+export * from './models';
+export * from './table-config';
+export * from './multi-table';
+
+// auth 모듈에서 UserRole 제외하고 export
+export type { User, AuthState, LoginCredentials, LoginResponse } from './auth';
+
+// Legacy types for backward compatibility (will be deprecated)
 // 사용자 관련 타입
-export interface User {
+export interface LegacyUser {
   id: number;
   username: string;
   email: string;
   fullName: string;
-  role: UserRole;
+  role: LegacyUserRole;
   isActive: boolean;
   phoneNumber?: string;
   department?: string;
@@ -13,7 +23,7 @@ export interface User {
   updatedAt: string;
 }
 
-export enum UserRole {
+export enum LegacyUserRole {
   ADMIN = 'admin',
   INSPECTOR = 'inspector',
   MANAGER = 'manager',
@@ -21,14 +31,14 @@ export enum UserRole {
 }
 
 // 품질 검사 관련 타입
-export interface Inspection {
+export interface LegacyInspection {
   id: number;
   productId: string;
   productName: string;
   batchNumber: string;
   inspectorId: number;
-  type: InspectionType;
-  status: InspectionStatus;
+  type: LegacyInspectionType;
+  status: LegacyInspectionStatus;
   description?: string;
   results?: any;
   notes?: string;
@@ -43,7 +53,7 @@ export interface Inspection {
   };
 }
 
-export enum InspectionStatus {
+export enum LegacyInspectionStatus {
   PENDING = 'pending',
   IN_PROGRESS = 'in_progress',
   PASSED = 'passed',
@@ -51,7 +61,7 @@ export enum InspectionStatus {
   CANCELLED = 'cancelled',
 }
 
-export enum InspectionType {
+export enum LegacyInspectionType {
   INCOMING = 'incoming',
   PROCESS = 'process',
   SHIPMENT = 'shipment',
@@ -62,7 +72,7 @@ export interface CreateInspectionDto {
   productId: string;
   productName: string;
   batchNumber: string;
-  type: InspectionType;
+  type: LegacyInspectionType;
   inspectionDate: string;
   inspectedQuantity: number;
   defectQty: number;
@@ -72,7 +82,7 @@ export interface CreateInspectionDto {
 }
 
 export interface UpdateInspectionDto {
-  status?: InspectionStatus;
+  status?: LegacyInspectionStatus;
   results?: any;
   notes?: string;
   completedAt?: string;
@@ -111,20 +121,20 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   accessToken: string;
-  user: User;
+  user: LegacyUser;
 }
 
-// API 응답 타입
-export interface ApiResponse<T> {
+// Legacy API 응답 타입 (새로운 타입은 api.ts에서 가져옴)
+export interface LegacyApiResponse<T> {
   data: T;
   message?: string;
   success: boolean;
 }
 
-export interface PaginatedResponse<T> {
+export interface LegacyPaginatedResponse<T> {
   data: T[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
-} 
+}

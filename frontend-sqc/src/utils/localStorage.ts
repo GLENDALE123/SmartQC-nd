@@ -20,7 +20,7 @@ export function setLocalStorageWithTTL<T>(key: string, data: T, ttlHours: number
   try {
     localStorage.setItem(key, JSON.stringify(item))
   } catch (error) {
-    console.error('로컬 스토리지 저장 실패:', error)
+    // 저장 실패 시 무시
   }
 }
 
@@ -49,7 +49,6 @@ export function getLocalStorageWithTTL<T>(key: string, defaultValue: T): T {
     
     return item.data
   } catch (error) {
-    console.error('로컬 스토리지 조회 실패:', error)
     return defaultValue
   }
 }
@@ -62,19 +61,28 @@ export function removeLocalStorageWithTTL(key: string): void {
   try {
     localStorage.removeItem(key)
   } catch (error) {
-    console.error('로컬 스토리지 삭제 실패:', error)
+    // 삭제 실패 시 무시
   }
 }
 
 /**
  * 로컬 스토리지의 모든 만료된 데이터를 정리합니다.
+ * authToken과 user는 인증 관련 데이터이므로 정리에서 제외합니다.
  */
 export function cleanupExpiredLocalStorage(): void {
   try {
     const keys = Object.keys(localStorage)
     const now = Date.now()
     
+    // 인증 관련 키는 정리에서 제외
+    const excludeKeys = ['authToken', 'user']
+    
     keys.forEach(key => {
+      // 인증 관련 키는 건드리지 않음
+      if (excludeKeys.includes(key)) {
+        return
+      }
+      
       try {
         const itemString = localStorage.getItem(key)
         if (itemString) {
@@ -84,11 +92,13 @@ export function cleanupExpiredLocalStorage(): void {
           }
         }
       } catch (error) {
-        // JSON 파싱 실패 시 해당 키 삭제
-        localStorage.removeItem(key)
+        // JSON 파싱 실패 시 해당 키 삭제 (단, 인증 키는 제외)
+        if (!excludeKeys.includes(key)) {
+          localStorage.removeItem(key)
+        }
       }
     })
   } catch (error) {
     console.error('로컬 스토리지 정리 실패:', error)
   }
-} 
+}

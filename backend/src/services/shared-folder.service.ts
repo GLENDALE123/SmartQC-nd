@@ -130,8 +130,7 @@ export class SharedFolderService {
       writeFileSync(modalPath, modalBuffer);
       
       // DB에 Attachment 레코드 저장 (inspectionId를 바로 저장)
-      console.log('[SharedFolderService] 이미지 업로드 시 inspectionId:', inspectionId);
-      console.log('[SharedFolderService] inspectionId 타입:', typeof inspectionId);
+      // 이미지 업로드 처리
       
       const attachmentData = {
         url: inspectionFolder, // inspectionId까지만 저장
@@ -142,14 +141,9 @@ export class SharedFolderService {
         shipmentInspectionId: null,
       };
       
-      console.log('[SharedFolderService] 저장할 attachment 데이터:', attachmentData);
-      
       const attachment = await this.prisma.attachment.create({
-        data: attachmentData
-      });
-      
-      console.log('[SharedFolderService] 생성된 attachment:', attachment);
-      console.log('[SharedFolderService] attachment.incomingInspectionId:', attachment.incomingInspectionId);
+          data: attachmentData
+        });
       
       const result = {
         id: attachment.id.toString(),
@@ -422,4 +416,4 @@ export class SharedFolderService {
       throw new Error(`이미지 목록 조회 실패: ${error.message}`);
     }
   }
-} 
+}

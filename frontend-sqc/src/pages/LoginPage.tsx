@@ -1,7 +1,5 @@
-"use client"
-
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { IconEye, IconEyeOff, IconLock, IconUser } from "@tabler/icons-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth"
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth()
   
   const [formData, setFormData] = useState({
@@ -20,12 +19,14 @@ export function LoginPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
 
-  // 이미 로그인된 경우 메인 페이지로 리다이렉트
+  // 이미 로그인된 경우 적절한 페이지로 리다이렉트
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/", { replace: true })
+    if (isAuthenticated && !isLoading) {
+      // ProtectedRoute에서 전달된 returnUrl이 있으면 해당 페이지로, 없으면 메인 페이지로
+      const returnUrl = (location.state as any)?.returnUrl || "/"
+      navigate(returnUrl, { replace: true })
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, isLoading, navigate, location.state])
 
   // 에러 메시지가 변경될 때 자동으로 클리어
   useEffect(() => {
@@ -39,7 +40,12 @@ export function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await login(formData)
+    try {
+      await login(formData)
+      // 로그인 성공 시 리다이렉트는 위의 useEffect에서 처리됨
+    } catch (loginError) {
+      // 에러는 이미 store에서 처리됨
+    }
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -156,4 +162,4 @@ export function LoginPage() {
       </div>
     </div>
   )
-} 
+}

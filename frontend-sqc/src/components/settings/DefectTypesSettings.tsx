@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { defectTypesApi, DefectType } from '@/api/defect-types';
 import { ColorPicker } from '@/components/ui/color-picker';
@@ -236,4 +236,4 @@ export default function DefectTypesSettings() {
       )}
     </Card>
   );
-} 
+}

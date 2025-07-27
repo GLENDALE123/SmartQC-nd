@@ -13,6 +13,64 @@ import { ValidationException } from '../exceptions/custom-exceptions';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  @Get()
+  @ApiOperation({ summary: '주문 목록 조회 (페이지네이션, 검색, 정렬 지원)' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: '페이지 번호 (1부터 시작)' })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number, description: '페이지 크기' })
+  @ApiQuery({ name: 'search', required: false, type: String, description: '검색어' })
+  @ApiQuery({ name: 'sort', required: false, type: String, description: '정렬 조건 (예: col0.desc)' })
+  @ApiQuery({ name: 'dateFrom', required: false, type: String, description: '시작 날짜 (ISO 문자열)' })
+  @ApiQuery({ name: 'dateTo', required: false, type: String, description: '종료 날짜 (ISO 문자열)' })
+  @ApiQuery({ name: 'dateField', required: false, type: String, description: '날짜 필드명 (기본값: createdAt)' })
+  async getOrders(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+    @Query('search') search?: string,
+    @Query('sort') sort?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('dateField') dateField?: string,
+  ): Promise<{
+    data: OrderInfoResponseDto[];
+    pagination: {
+      page: number;
+      pageSize: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
+    // 날짜 범위 객체 구성
+    let dateRange: { from?: Date; to?: Date; field?: string } | undefined;
+    
+    if (dateFrom || dateTo) {
+      dateRange = {
+        field: dateField || 'createdAt'
+      };
+      
+      if (dateFrom) {
+        const fromDate = new Date(dateFrom);
+        if (!isNaN(fromDate.getTime())) {
+          dateRange.from = fromDate;
+        }
+      }
+      
+      if (dateTo) {
+        const toDate = new Date(dateTo);
+        if (!isNaN(toDate.getTime())) {
+          dateRange.to = toDate;
+        }
+      }
+    }
+
+    return this.orderService.getOrdersWithPagination({
+      page,
+      pageSize,
+      search,
+      sort,
+      dateRange,
+    });
+  }
+
   @Get('search')
   @ApiOperation({ 
     summary: '발주번호로 주문 정보 검색', 

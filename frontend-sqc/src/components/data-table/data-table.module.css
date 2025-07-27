@@ -1,0 +1,301 @@
+/* DataTable 모듈 CSS - Tailwind 테마 기반 */
+
+/* 기본 데이터 테이블 컨테이너 */
+.container {
+  @apply w-full space-y-3 overflow-auto;
+}
+
+/* 테이블 래퍼 - 반응형 및 테마 지원 */
+.wrapper {
+  @apply relative overflow-hidden rounded-lg border border-border bg-card shadow-sm;
+}
+
+/* 테이블 스크롤 영역 */
+.scroll {
+  @apply overflow-x-auto;
+}
+
+/* 테이블 헤더 스타일 */
+.header {
+  @apply bg-muted/50 backdrop-blur-sm;
+}
+
+.headerRow {
+  @apply border-b border-border hover:bg-transparent;
+}
+
+.headerCell {
+  @apply h-12 px-4 text-left align-middle font-medium text-muted-foreground;
+  @apply bg-muted/30 first:rounded-tl-lg last:rounded-tr-lg;
+  @apply border-r border-border/50 last:border-r-0;
+  @apply transition-colors duration-200;
+}
+
+/* 테이블 바디 행 스타일 */
+.row {
+  @apply border-b border-border/50 transition-colors duration-200;
+  @apply hover:bg-muted/50 data-[state=selected]:bg-muted;
+  @apply relative;
+}
+
+/* group 클래스는 별도로 적용 */
+.row:global(.group) {
+  /* group 관련 스타일이 필요한 경우 여기에 추가 */
+}
+
+.rowEven {
+  @apply bg-background;
+}
+
+.rowOdd {
+  @apply bg-muted/20;
+}
+
+/* 테이블 셀 스타일 */
+.cell {
+  @apply px-4 py-3 align-middle;
+  @apply border-r border-border/30 last:border-r-0;
+  @apply transition-colors duration-200;
+}
+
+/* 빈 상태 스타일 */
+.empty {
+  @apply h-32 text-center text-muted-foreground;
+  @apply bg-muted/10 border-none;
+}
+
+.emptyContent {
+  @apply flex flex-col items-center justify-center space-y-2;
+}
+
+/* 툴바 스타일 */
+.toolbar {
+  @apply flex flex-col gap-4 p-4 bg-card border border-border rounded-lg shadow-sm;
+}
+
+.toolbarMain {
+  @apply flex flex-col sm:flex-row gap-3;
+}
+
+.toolbarSearch {
+  @apply flex flex-1 flex-col sm:flex-row gap-2;
+}
+
+.toolbarActions {
+  @apply flex items-center gap-2 flex-shrink-0;
+}
+
+.toolbarFilters {
+  @apply flex flex-wrap items-center gap-2 pt-2 border-t border-border;
+}
+
+/* 페이지네이션 스타일 */
+.pagination {
+  @apply flex w-full flex-col gap-4 rounded-lg border border-border bg-card p-4 shadow-sm;
+  @apply sm:flex-row sm:items-center sm:justify-between;
+}
+
+.paginationInfo {
+  @apply flex flex-1 items-center justify-center sm:justify-start;
+}
+
+.paginationControls {
+  @apply flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8;
+}
+
+/* 셀 타입별 스타일 */
+.cellNumber {
+  @apply font-mono text-sm font-medium tabular-nums text-foreground;
+}
+
+.cellCurrency {
+  @apply font-mono text-sm font-medium tabular-nums text-foreground;
+}
+
+.cellCurrencyPositive {
+  @apply text-green-600 dark:text-green-400;
+}
+
+.cellCurrencyNegative {
+  @apply text-red-600 dark:text-red-400;
+}
+
+.cellDate {
+  @apply font-mono text-sm tabular-nums text-muted-foreground;
+  @apply bg-muted/30 px-2 py-1 rounded-md;
+}
+
+.cellEmpty {
+  @apply text-muted-foreground italic;
+}
+
+/* 상태 배지 스타일 */
+.statusBadge {
+  @apply font-medium text-xs px-2 py-1 rounded-full transition-colors duration-200;
+}
+
+.statusCompleted {
+  @apply bg-green-100 text-green-800 border-green-200;
+  @apply dark:bg-green-900/20 dark:text-green-400 dark:border-green-800;
+}
+
+.statusProgress {
+  @apply bg-blue-100 text-blue-800 border-blue-200;
+  @apply dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800;
+}
+
+.statusPending {
+  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+  @apply dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800;
+}
+
+.statusHold {
+  @apply bg-orange-100 text-orange-800 border-orange-200;
+  @apply dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800;
+}
+
+.statusCancelled {
+  @apply bg-red-100 text-red-800 border-red-200;
+  @apply dark:bg-red-900/20 dark:text-red-400 dark:border-red-800;
+}
+
+/* 버튼 변형 스타일 */
+.button {
+  @apply bg-background border-border;
+  @apply hover:bg-accent hover:text-accent-foreground;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply transition-all duration-200;
+}
+
+.buttonSm {
+  @apply h-8 px-3;
+}
+
+.buttonIcon {
+  @apply h-8 w-8;
+}
+
+/* 입력 필드 스타일 */
+.input {
+  @apply bg-background border-border;
+  @apply focus:ring-2 focus:ring-ring focus:border-transparent;
+  @apply transition-all duration-200;
+}
+
+.searchInput {
+  @apply h-9 pl-9 pr-4;
+}
+
+/* 선택 드롭다운 스타일 */
+.selectTrigger {
+  @apply bg-background border-border;
+  @apply hover:bg-accent hover:text-accent-foreground;
+  @apply transition-colors duration-200;
+}
+
+.selectContent {
+  @apply bg-popover/95 backdrop-blur-md border-border;
+  @apply supports-[backdrop-filter]:bg-popover/80;
+}
+
+/* 사이드바 스타일 */
+.sidebar {
+  @apply border-r border-border bg-card/50 backdrop-blur-sm;
+  @apply supports-[backdrop-filter]:bg-card/80;
+  @apply flex-shrink-0 overflow-y-auto;
+}
+
+.sidebarHeader {
+  @apply mb-6 space-y-2;
+}
+
+.sidebarTitle {
+  @apply text-lg font-semibold text-foreground;
+}
+
+.sidebarDescription {
+  @apply text-sm text-muted-foreground;
+}
+
+/* 스켈레톤 로딩 스타일 */
+.skeleton {
+  @apply animate-pulse bg-muted rounded;
+}
+
+.skeletonRow {
+  @apply h-12 w-full;
+}
+
+.skeletonCell {
+  @apply h-4 bg-muted/60 rounded;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 640px) {
+  .container {
+    @apply space-y-2;
+  }
+  
+  .toolbar {
+    @apply p-3;
+  }
+  
+  .pagination {
+    @apply p-3;
+  }
+  
+  .headerCell,
+  .cell {
+    @apply px-2 py-2;
+  }
+}
+
+/* 다크 모드 특화 스타일 */
+@media (prefers-color-scheme: dark) {
+  .wrapper {
+    @apply shadow-lg;
+  }
+  
+  .header {
+    @apply bg-muted/30;
+  }
+  
+  .toolbar,
+  .pagination {
+    @apply shadow-lg;
+  }
+}
+
+/* 접근성 개선 */
+.focusRing {
+  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
+}
+
+/* 애니메이션 */
+.fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

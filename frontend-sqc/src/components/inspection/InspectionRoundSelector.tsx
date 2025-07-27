@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { IconPlus, IconX } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
@@ -36,11 +35,6 @@ export function InspectionRoundSelector({
   inspectionRounds, 
   onInspectionRoundsChange 
 }: InspectionRoundSelectorProps) {
-  
-  // 날짜 포맷팅 함수
-  const formatDate = (date: string) => {
-    return date.replace(/-/g, '.')
-  }
 
   // 검사 회차 추가
   const addInspectionRound = () => {
@@ -70,14 +64,6 @@ export function InspectionRoundSelector({
         ...round,
         roundNumber: index + 1
       }))
-    onInspectionRoundsChange(updatedRounds)
-  }
-
-  // 검사 회차 업데이트
-  const updateInspectionRound = (roundId: string, field: string, value: any) => {
-    const updatedRounds = inspectionRounds.map(round => 
-      round.id === roundId ? { ...round, [field]: value } : round
-    )
     onInspectionRoundsChange(updatedRounds)
   }
 
@@ -141,7 +127,7 @@ export function InspectionRoundSelector({
 
   return (
     <div className="space-y-6 w-full">
-      {inspectionRounds.map((round, roundIndex) => (
+      {inspectionRounds.map((round) => (
         <div key={round.id}>
           {/* 포장 작업자별 불량 입력 */}
           <Card>
@@ -159,7 +145,7 @@ export function InspectionRoundSelector({
               )}
             </div>
             <div className="px-3 sm:px-4 pb-4 space-y-4 w-full">
-              {round.workerDefects.map((worker, workerIndex) => (
+              {round.workerDefects.map((worker) => (
                 <div key={worker.id} className="flex items-start gap-4 p-3 sm:p-4 border rounded-lg bg-muted/30 relative">
                   {/* 삭제 버튼 - 카드 우측상단 */}
                   {round.workerDefects.length > 1 && (
@@ -244,4 +230,4 @@ export function InspectionRoundSelector({
       </Button>
     </div>
   )
-} 
+}

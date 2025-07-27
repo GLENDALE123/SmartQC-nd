@@ -1,3 +1,6 @@
+/* DataTable 모듈 CSS import */
+@import './components/data-table/data-table.module.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -82,5 +85,97 @@
   
   [data-theme="dark"] {
     color-scheme: dark;
+  }
+}
+
+@layer utilities {
+  /* 접근성 관련 유틸리티 */
+  .sr-only-focusable {
+    @apply sr-only;
+  }
+  
+  .sr-only-focusable:focus {
+    @apply not-sr-only absolute z-50 p-2 bg-background border border-border rounded;
+  }
+  
+  /* 스크롤바 스타일링 */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--muted));
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
+  
+  /* 테이블 반응형 유틸리티 */
+  .table-responsive {
+    @apply overflow-x-auto scrollbar-thin;
+  }
+  
+  /* 포커스 링 스타일 */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
+  }
+  
+  /* 애니메이션 유틸리티 */
+  .animate-in {
+    animation: animate-in 0.2s ease-out;
+  }
+  
+  .animate-out {
+    animation: animate-out 0.2s ease-in;
+  }
+  
+  @keyframes animate-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes animate-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+  
+  /* 텍스트 트렁케이션 */
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }

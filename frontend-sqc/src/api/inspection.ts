@@ -1,8 +1,7 @@
 import { apiClient } from './client';
 import { 
-  Inspection, 
+  AnyInspection, 
   InspectionStatus, 
-  InspectionType,
   CreateInspectionDto,
   UpdateInspectionDto 
 } from '../types';
@@ -104,23 +103,23 @@ export interface CreateShipmentInspectionDto {
 
 export const inspectionApi = {
   // 기존 API들 (호환성 유지)
-  getAll: async (): Promise<Inspection[]> => {
-    const res = await apiClient.get<Inspection[]>('/inspections');
+  getAll: async (): Promise<AnyInspection[]> => {
+    const res = await apiClient.get<AnyInspection[]>('/inspections');
     return res.data;
   },
 
-  getById: async (id: number): Promise<Inspection> => {
-    const res = await apiClient.get<Inspection>(`/inspections/${id}`);
+  getById: async (id: number): Promise<AnyInspection> => {
+    const res = await apiClient.get<AnyInspection>(`/inspections/${id}`);
     return res.data;
   },
 
-  create: async (data: CreateInspectionDto): Promise<Inspection> => {
-    const res = await apiClient.post<Inspection>('/inspections', data);
+  create: async (data: CreateInspectionDto): Promise<AnyInspection> => {
+    const res = await apiClient.post<AnyInspection>('/inspections', data);
     return res.data;
   },
 
-  update: async (id: number, data: UpdateInspectionDto): Promise<Inspection> => {
-    const res = await apiClient.patch<Inspection>(`/inspections/${id}`, data);
+  update: async (id: number, data: UpdateInspectionDto): Promise<AnyInspection> => {
+    const res = await apiClient.patch<AnyInspection>(`/inspections/${id}`, data);
     return res.data;
   },
 
@@ -128,18 +127,18 @@ export const inspectionApi = {
     await apiClient.delete<void>(`/inspections/${id}`);
   },
 
-  getByStatus: async (status: InspectionStatus): Promise<Inspection[]> => {
-    const res = await apiClient.get<Inspection[]>(`/inspections?status=${status}`);
+  getByStatus: async (status: InspectionStatus): Promise<AnyInspection[]> => {
+    const res = await apiClient.get<AnyInspection[]>(`/inspections?status=${status}`);
     return res.data;
   },
 
-  getByProductId: async (productId: string): Promise<Inspection[]> => {
-    const res = await apiClient.get<Inspection[]>(`/inspections?productId=${productId}`);
+  getByProductId: async (productId: string): Promise<AnyInspection[]> => {
+    const res = await apiClient.get<AnyInspection[]>(`/inspections?productId=${productId}`);
     return res.data;
   },
 
-  getByInspectorId: async (inspectorId: number): Promise<Inspection[]> => {
-    const res = await apiClient.get<Inspection[]>(`/inspections?inspectorId=${inspectorId}`);
+  getByInspectorId: async (inspectorId: number): Promise<AnyInspection[]> => {
+    const res = await apiClient.get<AnyInspection[]>(`/inspections?inspectorId=${inspectorId}`);
     return res.data;
   },
 
@@ -153,7 +152,7 @@ export const inspectionApi = {
     
     // 파일들 추가
     if (attachments && attachments.length > 0) {
-      attachments.forEach((attachment, index) => {
+      attachments.forEach((attachment) => {
         formData.append(`attachments`, attachment.file);
       });
     }
@@ -175,7 +174,7 @@ export const inspectionApi = {
     
     // 파일들 추가
     if (attachments && attachments.length > 0) {
-      attachments.forEach((attachment, index) => {
+      attachments.forEach((attachment) => {
         formData.append(`attachments`, attachment.file);
       });
     }
@@ -197,7 +196,7 @@ export const inspectionApi = {
     
     // 파일들 추가
     if (attachments && attachments.length > 0) {
-      attachments.forEach((attachment, index) => {
+      attachments.forEach((attachment) => {
         formData.append(`attachments`, attachment.file);
       });
     }

@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { IconFileText, IconClipboardList, IconCalendar, IconSettings, IconPhoto } from "@tabler/icons-react"
+import { IconFileText, IconClipboardList, IconSettings, IconPhoto } from "@tabler/icons-react"
 import { useAuth } from "@/hooks/useAuth"
 import { getLocalStorageWithTTL, setLocalStorageWithTTL } from "@/utils/localStorage"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -18,19 +18,6 @@ import { DefectTypeSelector } from "./DefectTypeSelector"
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
-
-interface OrderInfo {
-  orderNumber: string
-  client: string
-  productName: string
-  partName: string
-  specification: string
-  manager: string
-}
-
-interface ProcessInspectionFormProps {
-  orderInfos: OrderInfo[]
-}
 
 // 공정검사 전용 섹션들
 const PROCESS_INSPECTION_SECTIONS = [
@@ -103,7 +90,7 @@ const SPINDLE_RATIO_OPTIONS = [
   { value: "8:7", label: "8:7" }
 ]
 
-export function ProcessInspectionForm({ orderInfos }: ProcessInspectionFormProps) {
+export function ProcessInspectionForm() {
   const [activeSection, setActiveSection] = useState("summary")
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   // 기본 설정값
@@ -157,20 +144,15 @@ export function ProcessInspectionForm({ orderInfos }: ProcessInspectionFormProps
 
   // 사용자의 주 공정라인을 기본값으로 설정
   useEffect(() => {
-    if (user?.mainProcessLine && user.mainProcessLine !== 'select') {
-      updateFormData('processLine', user.mainProcessLine)
+    if (user?.processLine && user.processLine !== 'select') {
+      updateFormData('processLine', user.processLine)
     }
-  }, [user?.mainProcessLine])
+  }, [user?.processLine])
 
   // 요약 설정이 변경될 때마다 로컬 스토리지에 저장 (24시간 TTL)
   useEffect(() => {
     setLocalStorageWithTTL('processInspectionSummarySettings', summarySettings, 24)
   }, [summarySettings])
-
-  // 날짜 포맷팅 함수
-  const formatDate = (date: string) => {
-    return date.replace(/-/g, '.')
-  }
 
   // 폼 데이터 업데이트 함수
   const updateFormData = (field: string, value: any) => {
@@ -912,4 +894,4 @@ function ProcessInspectionContent({
       </div>
     </div>
   )
-} 
+}

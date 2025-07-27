@@ -60,8 +60,6 @@ export const useImageUpload = (inspectionId: number, readOnly: boolean = false) 
     // 임시 이미지에 추가
     setTempImages(prev => [...prev, file]);
     setTempPreviewUrls(prev => [...prev, URL.createObjectURL(file)]);
-
-    console.log(`${file.name} 파일이 임시로 추가되었습니다.`);
   }, [readOnly]);
 
   /**
@@ -115,7 +113,6 @@ export const useImageUpload = (inspectionId: number, readOnly: boolean = false) 
           // 진행률 업데이트
           setUploadProgress((uploadedCount / totalFiles) * 100);
         } catch (error: any) {
-          console.error(`파일 ${file.name} 업로드 실패:`, error);
           alert(`${file.name} 파일 업로드에 실패했습니다.`);
           throw error;
         }
@@ -127,10 +124,6 @@ export const useImageUpload = (inspectionId: number, readOnly: boolean = false) 
       // 임시 이미지 초기화
       setTempImages([]);
       setTempPreviewUrls([]);
-
-      if (uploadedCount > 0) {
-        console.log(`${uploadedCount}개 파일이 성공적으로 업로드되었습니다.`);
-      }
 
       return uploadedResults;
 
@@ -158,8 +151,6 @@ export const useImageUpload = (inspectionId: number, readOnly: boolean = false) 
       // 업로드된 이미지 목록에서 제거
       setUploadedImages(prev => prev.filter(img => img.id !== imageId));
 
-      console.log("이미지가 성공적으로 삭제되었습니다.");
-
     } catch (error: any) {
       alert(error.message || "이미지 삭제 중 오류가 발생했습니다.");
       throw error;
@@ -171,10 +162,7 @@ export const useImageUpload = (inspectionId: number, readOnly: boolean = false) 
    */
   const loadImages = useCallback(async () => {
     try {
-      console.log('[useImageUpload] loadImages 호출됨 - inspectionId:', inspectionId);
-      
       const response = await imageUploadApi.getImagesByInspection(inspectionId);
-      console.log('[useImageUpload] API 응답:', response);
       
       // 실제 이미지 데이터로 변환
       const images: UploadedImage[] = response.data.images.map((img) => ({
@@ -188,11 +176,10 @@ export const useImageUpload = (inspectionId: number, readOnly: boolean = false) 
         uploadedAt: new Date().toISOString(),
       }));
 
-      console.log('[useImageUpload] 변환된 이미지 데이터:', images);
       setUploadedImages(images);
 
     } catch (error: any) {
-      console.error('[useImageUpload] 이미지 목록 조회 실패:', error);
+      // 이미지 목록 조회 실패 시 무시
     }
   }, [inspectionId]);
 
@@ -226,4 +213,4 @@ export const useImageUpload = (inspectionId: number, readOnly: boolean = false) 
     loadImages,
     testConnection,
   };
-}; 
+};
