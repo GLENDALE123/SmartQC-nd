@@ -27,7 +27,14 @@ export class UploadLogService {
     return this.prisma.uploadLog.findUnique({ where: { id } });
   }
 
-  async getLogs(params: { limit: number; offset: number; userId?: number; keyword?: string; from?: string; to?: string }) {
+  async getLogs(params: {
+    limit: number;
+    offset: number;
+    userId?: number;
+    keyword?: string;
+    from?: string;
+    to?: string;
+  }) {
     const where: any = {};
     if (params.userId) where.userId = params.userId;
     if (params.keyword) where.fileName = { contains: params.keyword };
@@ -47,5 +54,4 @@ export class UploadLogService {
     ]);
     return { logs, total, limit: params.limit, offset: params.offset };
   }
-} 
- 
+}

@@ -1,14 +1,12 @@
 import { createContext, useContext, useState } from "react"
 import type { Table } from "@tanstack/react-table"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface TableInstanceContextProps<T = any> {
   tableInstance: Table<T>
   setTableInstance: React.Dispatch<React.SetStateAction<Table<T>>>
 }
 
 const TableInstanceContext = createContext<TableInstanceContextProps>({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tableInstance: {} as Table<any>,
   setTableInstance: () => {},
 })

@@ -61,8 +61,8 @@ apiClient.interceptors.response.use(
       // 네트워크 오류에 대한 사용자 친화적 에러 메시지
       const networkError = new Error('서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
       networkError.name = 'NetworkError';
-      (networkError as any).code = 'NETWORK_ERROR';
-      (networkError as any).originalError = error;
+      (networkError as Error & { code: string; originalError: unknown }).code = 'NETWORK_ERROR';
+      (networkError as Error & { code: string; originalError: unknown }).originalError = error;
       
       return Promise.reject(networkError);
     }
@@ -81,12 +81,12 @@ apiClient.interceptors.response.use(
       console.log('🔒 401 Unauthorized - 토큰 만료 또는 유효하지 않음');
       
       // 무한 리다이렉트 방지
-      if ((window as any).isRedirecting) {
+      if ((window as Window & { isRedirecting?: boolean }).isRedirecting) {
         console.log('⚠️ 이미 리다이렉트 중이므로 중복 처리 방지');
         return Promise.reject(error);
       }
       
-      (window as any).isRedirecting = true;
+      (window as Window & { isRedirecting?: boolean }).isRedirecting = true;
       
       // 토큰 및 사용자 정보 제거
       try {
@@ -101,7 +101,7 @@ apiClient.interceptors.response.use(
       
       // 로그인 페이지로 리다이렉트 (지연을 통한 안정성 확보)
       setTimeout(() => {
-        (window as any).isRedirecting = false;
+        (window as Window & { isRedirecting?: boolean }).isRedirecting = false;
         window.location.href = '/login';
       }, 100);
     }

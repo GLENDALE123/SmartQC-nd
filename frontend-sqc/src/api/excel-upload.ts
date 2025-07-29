@@ -29,9 +29,9 @@ export interface ExcelUploadResponse {
       errors: Array<{
         row: number;
         error: string;
-        data?: any;
+        data?: Record<string, unknown>;
       }>;
-      created: any[];
+      created: Record<string, unknown>[];
     };
   };
 }

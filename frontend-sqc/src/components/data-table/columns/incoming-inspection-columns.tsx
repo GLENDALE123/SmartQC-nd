@@ -1,60 +1,12 @@
 // IncomingInspection 테이블 컬럼 정의
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontalIcon } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
-import { IncomingInspection, InspectionDraftStatus } from "@/types/models"
 import { DataTableColumnHeader } from "../data-table-column-header"
-import {
-  NumberCell,
-  DateCell,
-  StatusBadge,
-  ArrayCell,
-  TextCell,
-} from "../cells"
-
-// 검사 상태 배지 컴포넌트
-function InspectionStatusBadge({ status }: { status: InspectionDraftStatus }) {
-  const getStatusLabel = (status: InspectionDraftStatus) => {
-    switch (status) {
-      case InspectionDraftStatus.DRAFT:
-        return '임시저장'
-      case InspectionDraftStatus.COMPLETED:
-        return '완료'
-      default:
-        return status
-    }
-  }
-
-  const getStatusVariant = (status: InspectionDraftStatus) => {
-    switch (status) {
-      case InspectionDraftStatus.COMPLETED:
-        return 'default' as const
-      case InspectionDraftStatus.DRAFT:
-        return 'secondary' as const
-      default:
-        return 'outline' as const
-    }
-  }
-
-  return (
-    <StatusBadge 
-      status={getStatusLabel(status)} 
-      variant={getStatusVariant(status)}
-    />
-  )
-}
+import { DataTableRowActions } from "../data-table-row-actions"
+import { StatusBadge } from "../cells/status-badge"
+import { NumberCell, TextCell, DateCell, ArrayCell } from "../cells"
+import { InspectionDraftStatus } from "@/types/inspection"
 
 // IncomingInspection 테이블 컬럼 정의
 export const incomingInspectionColumns: ColumnDef<IncomingInspection>[] = [
@@ -123,8 +75,7 @@ export const incomingInspectionColumns: ColumnDef<IncomingInspection>[] = [
     cell: ({ row }) => (
       <TextCell 
         value={row.getValue("client")} 
-        maxLength={20}
-        showTooltip
+        className="max-w-[200px] truncate"
       />
     ),
     size: 150,
@@ -139,8 +90,7 @@ export const incomingInspectionColumns: ColumnDef<IncomingInspection>[] = [
     cell: ({ row }) => (
       <TextCell 
         value={row.getValue("productName")} 
-        maxLength={25}
-        showTooltip
+        className="max-w-[200px] truncate"
       />
     ),
     size: 200,
@@ -155,75 +105,25 @@ export const incomingInspectionColumns: ColumnDef<IncomingInspection>[] = [
     cell: ({ row }) => (
       <TextCell 
         value={row.getValue("partName")} 
-        maxLength={20}
-        showTooltip
+        className="max-w-[200px] truncate"
       />
     ),
-    size: 150,
+    size: 200,
   },
 
-  // 검사일
+  // 사양
   {
-    accessorKey: "inspectionDate",
+    accessorKey: "specification",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="검사일" />
+      <DataTableColumnHeader column={column} title="사양" />
     ),
     cell: ({ row }) => (
-      <DateCell 
-        date={row.getValue("inspectionDate")} 
-        showTime={false}
+      <TextCell 
+        value={row.getValue("specification")} 
+        className="max-w-[200px] truncate"
       />
     ),
-    size: 120,
-  },
-
-  // 총 수량
-  {
-    accessorKey: "totalQty",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="총 수량" className="text-right" />
-    ),
-    cell: ({ row }) => (
-      <div className="text-right">
-        <NumberCell 
-          value={row.getValue("totalQty")} 
-          format="integer"
-        />
-      </div>
-    ),
-    size: 100,
-  },
-
-  // 불량 수량
-  {
-    accessorKey: "defectQty",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="불량 수량" className="text-right" />
-    ),
-    cell: ({ row }) => (
-      <div className="text-right">
-        <NumberCell 
-          value={row.getValue("defectQty")} 
-          format="integer"
-        />
-      </div>
-    ),
-    size: 100,
-  },
-
-  // 상태
-  {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="상태" />
-    ),
-    cell: ({ row }) => (
-      <InspectionStatusBadge status={row.getValue("status")} />
-    ),
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
-    size: 100,
+    size: 200,
   },
 
   // 담당자
@@ -235,11 +135,88 @@ export const incomingInspectionColumns: ColumnDef<IncomingInspection>[] = [
     cell: ({ row }) => (
       <TextCell 
         value={row.getValue("manager")} 
-        maxLength={10}
-        showTooltip
+        className="max-w-[150px] truncate"
+      />
+    ),
+    size: 120,
+  },
+
+  // 검사일
+  {
+    accessorKey: "inspectionDate",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="검사일" />
+    ),
+    cell: ({ row }) => (
+      <DateCell 
+        value={row.getValue("inspectionDate")} 
+        format="yyyy-MM-dd"
+      />
+    ),
+    size: 120,
+  },
+
+  // 총 수량
+  {
+    accessorKey: "totalQty",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="총 수량" />
+    ),
+    cell: ({ row }) => (
+      <NumberCell 
+        value={row.getValue("totalQty")} 
+        className="text-center"
       />
     ),
     size: 100,
+  },
+
+  // 불량 수량
+  {
+    accessorKey: "defectQty",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="불량 수량" />
+    ),
+    cell: ({ row }) => (
+      <NumberCell 
+        value={row.getValue("defectQty")} 
+        className="text-center"
+      />
+    ),
+    size: 100,
+  },
+
+  // 상태
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="상태" />
+    ),
+    cell: ({ row }) => {
+      const status = row.getValue("status") as InspectionDraftStatus
+      return (
+        <StatusBadge 
+          status={status === InspectionDraftStatus.DRAFT ? '임시저장' : '완료'} 
+          variant={status === InspectionDraftStatus.COMPLETED ? 'default' : 'secondary'}
+        />
+      )
+    },
+    size: 100,
+  },
+
+  // 비고
+  {
+    accessorKey: "notes",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="비고" />
+    ),
+    cell: ({ row }) => (
+      <TextCell 
+        value={row.getValue("notes")} 
+        className="max-w-[200px] truncate"
+      />
+    ),
+    size: 200,
   },
 
   // 생성일
@@ -250,52 +227,35 @@ export const incomingInspectionColumns: ColumnDef<IncomingInspection>[] = [
     ),
     cell: ({ row }) => (
       <DateCell 
-        date={row.getValue("createdAt")} 
-        showTime
+        value={row.getValue("createdAt")} 
+        format="yyyy-MM-dd HH:mm"
       />
     ),
-    size: 160,
+    size: 150,
   },
 
-  // 액션 버튼
+  // 수정일
+  {
+    accessorKey: "updatedAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="수정일" />
+    ),
+    cell: ({ row }) => (
+      <DateCell 
+        value={row.getValue("updatedAt")} 
+        format="yyyy-MM-dd HH:mm"
+      />
+    ),
+    size: 150,
+  },
+
+  // 액션
   {
     id: "actions",
-    header: "액션",
-    cell: ({ row }) => {
-      const inspection = row.original
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">메뉴 열기</span>
-              <MoreHorizontalIcon className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>액션</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(inspection.id.toString())}
-            >
-              ID 복사
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>보기</DropdownMenuItem>
-            <DropdownMenuItem>편집</DropdownMenuItem>
-            {inspection.status === InspectionDraftStatus.DRAFT && (
-              <DropdownMenuItem>완료 처리</DropdownMenuItem>
-            )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
-              삭제
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    cell: ({ row }) => <DataTableRowActions row={row} />,
     enableSorting: false,
     enableHiding: false,
-    size: 50,
+    size: 80,
   },
 ]
 

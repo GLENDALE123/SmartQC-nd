@@ -42,7 +42,13 @@ export class PaginatedResponse<T> extends ApiResponse<T[]> {
   @ApiProperty({ description: '총 페이지 수' })
   totalPages: number;
 
-  constructor(data: T[], total: number, page: number, limit: number, message?: string) {
+  constructor(
+    data: T[],
+    total: number,
+    page: number,
+    limit: number,
+    message?: string,
+  ) {
     super(true, data, message);
     this.total = total;
     this.page = page;

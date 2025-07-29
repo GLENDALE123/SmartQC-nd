@@ -47,7 +47,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  
+
   console.log(`🚀 Quality Control 서비스가 포트 ${port}에서 실행 중입니다.`);
   console.log(`📚 API 문서: http://localhost:${port}/api`);
 }

@@ -1,19 +1,31 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma.service';
 import { User, UserRole } from '@prisma/client';
-import { LoginDto, RegisterDto, AuthResponseDto, JwtPayload, RefreshTokenDto, UpdateProfileDto } from '../dtos/auth.dto';
+import {
+  LoginDto,
+  RegisterDto,
+  AuthResponseDto,
+  JwtPayload,
+  RefreshTokenDto,
+  UpdateProfileDto,
+} from '../dtos/auth.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    const { username, password, name, inspectionType, processLine } = registerDto;
+    const { username, password, name, inspectionType, processLine } =
+      registerDto;
 
     // 사용자명 중복 확인
     const existingUsername = await this.prisma.user.findUnique({
@@ -53,7 +65,7 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
     const refreshToken = this.jwtService.sign(
       { sub: user.id, type: 'refresh' },
-      { expiresIn: '7d' }
+      { expiresIn: '7d' },
     );
 
     return {
@@ -119,7 +131,7 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
     const refreshToken = this.jwtService.sign(
       { sub: user.id, type: 'refresh' },
-      { expiresIn: '7d' }
+      { expiresIn: '7d' },
     );
 
     return {
@@ -158,19 +170,22 @@ export class AuthService {
    * @param inspectionType 검사 유형 ('incoming', 'process', 'shipment')
    * @returns 권한 여부
    */
-  async hasInspectionPermission(userId: number, inspectionType: string): Promise<boolean> {
+  async hasInspectionPermission(
+    userId: number,
+    inspectionType: string,
+  ): Promise<boolean> {
     const user = await this.validateUser(userId);
-    
+
     // 관리자는 모든 검사 권한 보유
     if (user.role === UserRole.admin || user.role === UserRole.manager) {
       return true;
     }
-    
+
     // 사용자의 inspectionType이 'all'이면 모든 검사 권한 보유
     if (user.inspectionType === 'all') {
       return true;
     }
-    
+
     // 사용자의 inspectionType과 요청된 검사 유형이 일치하는지 확인
     return user.inspectionType === inspectionType;
   }
@@ -181,23 +196,26 @@ export class AuthService {
    * @param processLine 공정라인
    * @returns 권한 여부
    */
-  async hasProcessLinePermission(userId: number, processLine?: string): Promise<boolean> {
+  async hasProcessLinePermission(
+    userId: number,
+    processLine?: string,
+  ): Promise<boolean> {
     if (!processLine) {
       return true; // 공정라인이 지정되지 않은 경우 허용
     }
 
     const user = await this.validateUser(userId);
-    
+
     // 관리자는 모든 공정라인 권한 보유
     if (user.role === UserRole.admin || user.role === UserRole.manager) {
       return true;
     }
-    
+
     // 사용자의 공정라인이 지정되지 않은 경우 모든 라인 접근 가능
     if (!user.processLine) {
       return true;
     }
-    
+
     // 사용자의 공정라인과 요청된 공정라인이 일치하는지 확인
     return user.processLine === processLine;
   }
@@ -227,13 +245,15 @@ export class AuthService {
    * @param refreshTokenDto 리프레시 토큰 DTO
    * @returns 새로운 토큰 정보
    */
-  async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<AuthResponseDto> {
+  async refreshToken(
+    refreshTokenDto: RefreshTokenDto,
+  ): Promise<AuthResponseDto> {
     const { refresh_token } = refreshTokenDto;
 
     try {
       // 리프레시 토큰 검증
       const payload = this.jwtService.verify(refresh_token);
-      
+
       // 리프레시 토큰 타입 확인
       if (payload.type !== 'refresh') {
         throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
@@ -250,11 +270,13 @@ export class AuthService {
         inspectionType: user.inspectionType,
         processLine: user.processLine,
       };
-      
-      const accessToken = this.jwtService.sign(newPayload, { expiresIn: '15m' });
+
+      const accessToken = this.jwtService.sign(newPayload, {
+        expiresIn: '15m',
+      });
       const newRefreshToken = this.jwtService.sign(
         { sub: user.id, type: 'refresh' },
-        { expiresIn: '7d' }
+        { expiresIn: '7d' },
       );
 
       return {
@@ -276,7 +298,9 @@ export class AuthService {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new UnauthorizedException('유효하지 않거나 만료된 리프레시 토큰입니다.');
+      throw new UnauthorizedException(
+        '유효하지 않거나 만료된 리프레시 토큰입니다.',
+      );
     }
   }
 
@@ -286,7 +310,10 @@ export class AuthService {
    * @param updateProfileDto 업데이트할 프로필 정보
    * @returns 업데이트된 사용자 정보
    */
-  async updateProfile(userId: number, updateProfileDto: UpdateProfileDto): Promise<any> {
+  async updateProfile(
+    userId: number,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<any> {
     // 사용자 검증
     await this.validateUser(userId);
 
@@ -295,10 +322,18 @@ export class AuthService {
       where: { id: userId },
       data: {
         ...(updateProfileDto.name && { name: updateProfileDto.name }),
-        ...(updateProfileDto.inspectionType && { inspectionType: updateProfileDto.inspectionType }),
-        ...(updateProfileDto.processLine !== undefined && { processLine: updateProfileDto.processLine }),
-        ...(updateProfileDto.rank !== undefined && { rank: updateProfileDto.rank }),
-        ...(updateProfileDto.position !== undefined && { position: updateProfileDto.position }),
+        ...(updateProfileDto.inspectionType && {
+          inspectionType: updateProfileDto.inspectionType,
+        }),
+        ...(updateProfileDto.processLine !== undefined && {
+          processLine: updateProfileDto.processLine,
+        }),
+        ...(updateProfileDto.rank !== undefined && {
+          rank: updateProfileDto.rank,
+        }),
+        ...(updateProfileDto.position !== undefined && {
+          position: updateProfileDto.position,
+        }),
         updatedAt: new Date(),
       },
     });
@@ -333,9 +368,10 @@ export class AuthService {
 
     // 현재는 stateless JWT를 사용하므로 서버에서 특별한 처리 없음
     // 향후 필요시 토큰 블랙리스트나 데이터베이스에 로그아웃 기록 저장 가능
-    
+
     return {
-      message: '성공적으로 로그아웃되었습니다. 클라이언트에서 토큰을 삭제해주세요.',
+      message:
+        '성공적으로 로그아웃되었습니다. 클라이언트에서 토큰을 삭제해주세요.',
     };
   }
 }

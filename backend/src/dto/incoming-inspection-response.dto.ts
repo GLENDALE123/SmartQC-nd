@@ -9,4 +9,4 @@ export class IncomingInspectionResponseDto {
   attachments: Array<any>;
   createdAt: string;
   updatedAt: string;
-} 
+}

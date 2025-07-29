@@ -1,4 +1,16 @@
-import { Controller, Post, Get, Patch, Delete, Param, Body, UseGuards, Put, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Put,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { ShipmentInspectionService } from '../services/shipment-inspection.service';
@@ -13,22 +25,27 @@ import { FileValidationService } from '../services/file-validation.service';
 export class ShipmentInspectionController {
   constructor(
     private readonly service: ShipmentInspectionService,
-    private readonly fileValidationService: FileValidationService
+    private readonly fileValidationService: FileValidationService,
   ) {}
 
   @Post()
   @InspectionMultipartData()
   @ApiOperation({ summary: '출하검사 생성' })
-  @ApiResponse({ status: 201, description: '출하검사가 성공적으로 생성되었습니다.' })
+  @ApiResponse({
+    status: 201,
+    description: '출하검사가 성공적으로 생성되었습니다.',
+  })
   @ApiResponse({ status: 400, description: '잘못된 요청 데이터입니다.' })
   async create(@Body() dto: CreateShipmentInspectionDto) {
     // 파일 검증 (파일이 있는 경우)
     if (dto.attachments && dto.attachments.length > 0) {
-      const files = dto.attachments.map(attachment => attachment.file).filter(Boolean);
+      const files = dto.attachments
+        .map((attachment) => attachment.file)
+        .filter(Boolean);
       if (files.length > 0) {
         const validationResult = this.fileValidationService.validateFiles(
           files,
-          this.fileValidationService.getInspectionAttachmentOptions()
+          this.fileValidationService.getInspectionAttachmentOptions(),
         );
 
         if (!validationResult.isValid) {
@@ -38,7 +55,7 @@ export class ShipmentInspectionController {
               errors: validationResult.errors,
               warnings: validationResult.warnings,
             },
-            HttpStatus.BAD_REQUEST
+            HttpStatus.BAD_REQUEST,
           );
         }
 
@@ -62,14 +79,13 @@ export class ShipmentInspectionController {
     return this.service.findOne(Number(id));
   }
 
-
-
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateShipmentInspectionDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateShipmentInspectionDto,
+  ) {
     return this.service.update(Number(id), dto);
   }
-
-
 
   @Delete(':id')
   async remove(@Param('id') id: string) {

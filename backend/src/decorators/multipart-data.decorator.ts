@@ -2,7 +2,10 @@ import { applyDecorators, UseInterceptors } from '@nestjs/common';
 import { ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { MultipartDataInterceptor, MultipartDataOptions } from '../interceptors/multipart-data.interceptor';
+import {
+  MultipartDataInterceptor,
+  MultipartDataOptions,
+} from '../interceptors/multipart-data.interceptor';
 
 export interface MultipartDataDecoratorOptions extends MultipartDataOptions {
   swaggerDescription?: string;
@@ -31,37 +34,54 @@ export function MultipartData(options?: MultipartDataDecoratorOptions) {
     },
     fileFilter: (req: any, file: Express.Multer.File, callback: any) => {
       // Basic file validation
-      if (interceptorOptions.allowedMimeTypes && 
-          !interceptorOptions.allowedMimeTypes.includes(file.mimetype)) {
-        return callback(new Error(`지원하지 않는 파일 형식입니다: ${file.mimetype}`), false);
+      if (
+        interceptorOptions.allowedMimeTypes &&
+        !interceptorOptions.allowedMimeTypes.includes(file.mimetype)
+      ) {
+        return callback(
+          new Error(`지원하지 않는 파일 형식입니다: ${file.mimetype}`),
+          false,
+        );
       }
-      
+
       if (interceptorOptions.allowedExtensions) {
-        const extension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
+        const extension = file.originalname
+          .toLowerCase()
+          .substring(file.originalname.lastIndexOf('.'));
         if (!interceptorOptions.allowedExtensions.includes(extension)) {
-          return callback(new Error(`지원하지 않는 파일 확장자입니다: ${extension}`), false);
+          return callback(
+            new Error(`지원하지 않는 파일 확장자입니다: ${extension}`),
+            false,
+          );
         }
       }
-      
+
       callback(null, true);
     },
   };
 
   return applyDecorators(
     UseInterceptors(
-      FileFieldsInterceptor([{ name: 'attachments', maxCount: interceptorOptions.maxFiles }], multerOptions),
-      new MultipartDataInterceptor(interceptorOptions)
+      FileFieldsInterceptor(
+        [{ name: 'attachments', maxCount: interceptorOptions.maxFiles }],
+        multerOptions,
+      ),
+      new MultipartDataInterceptor(interceptorOptions),
     ),
     ApiConsumes('multipart/form-data'),
     ApiBody({
-      description: options?.swaggerDescription || 'Multipart form data with JSON and files',
+      description:
+        options?.swaggerDescription ||
+        'Multipart form data with JSON and files',
       schema: {
         type: 'object',
         properties: {
           data: {
             type: 'string',
             description: 'JSON string containing the main data',
-            example: options?.swaggerExample ? JSON.stringify(options.swaggerExample) : '{"key": "value"}',
+            example: options?.swaggerExample
+              ? JSON.stringify(options.swaggerExample)
+              : '{"key": "value"}',
           },
           attachments: {
             type: 'array',
@@ -74,7 +94,7 @@ export function MultipartData(options?: MultipartDataDecoratorOptions) {
         },
         required: ['data'],
       },
-    })
+    }),
   );
 }
 
@@ -95,9 +115,20 @@ export function InspectionMultipartData() {
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ],
-    allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.pdf', '.txt', '.doc', '.docx'],
+    allowedExtensions: [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.webp',
+      '.gif',
+      '.pdf',
+      '.txt',
+      '.doc',
+      '.docx',
+    ],
     jsonField: 'data',
-    swaggerDescription: 'Create inspection with JSON data and optional file attachments',
+    swaggerDescription:
+      'Create inspection with JSON data and optional file attachments',
     swaggerExample: {
       orderNumbers: ['T00000-1', 'T00000-2'],
       client: '삼성전자',
@@ -112,13 +143,13 @@ export function InspectionMultipartData() {
       defects: [
         {
           defectTypeId: 1,
-          count: 3
+          count: 3,
         },
         {
           customType: '기타 불량',
-          count: 2
-        }
-      ]
+          count: 2,
+        },
+      ],
     },
   });
 }

@@ -235,7 +235,14 @@ export class OrderApi {
     recentOrders: OrderInfoResponseDto[];
   }>> {
     try {
-      const response = await apiClient.get<ApiResponse<any>>('/orders/stats');
+      const response = await apiClient.get<ApiResponse<{
+        totalOrders: number;
+        ordersToday: number;
+        ordersThisWeek: number;
+        ordersThisMonth: number;
+        statusDistribution: { status: string; count: number }[];
+        recentOrders: OrderInfoResponseDto[];
+      }>>('/orders/stats');
       return response.data;
     } catch (error) {
       console.error('Order stats fetch failed:', error);
@@ -282,11 +289,12 @@ export class OrderApi {
   /**
    * API 에러 처리
    */
-  private handleApiError(error: any): Error {
-    if (error.response) {
+  private handleApiError(error: unknown): Error {
+    if (error && typeof error === 'object' && 'response' in error) {
       // 서버 응답이 있는 경우
-      const status = error.response.status;
-      const message = error.response.data?.error?.message || error.response.data?.message || error.message;
+      const response = (error as { response: { status: number; data?: { error?: { message: string }; message: string } } }).response;
+      const status = response.status;
+      const message = response.data?.error?.message || response.data?.message || (error as Error).message;
       
       switch (status) {
         case 400:
@@ -310,12 +318,12 @@ export class OrderApi {
         default:
           return new Error(`서버 오류 (${status}): ${message}`);
       }
-    } else if (error.request) {
+    } else if (error && typeof error === 'object' && 'request' in error) {
       // 요청은 보냈지만 응답을 받지 못한 경우
       return new Error('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
     } else {
       // 요청 설정 중 오류가 발생한 경우
-      return new Error(`요청 처리 중 오류가 발생했습니다: ${error.message}`);
+      return new Error(`요청 처리 중 오류가 발생했습니다: ${(error as Error).message}`);
     }
   }
 }
@@ -446,7 +454,7 @@ export const orderApiHelpers = {
    */
   buildExportRequest(params: {
     format: 'csv' | 'excel' | 'json';
-    filters?: Record<string, any>;
+    filters?: Record<string, unknown>;
     selectedIds?: number[];
     fields?: string[];
     filename?: string;

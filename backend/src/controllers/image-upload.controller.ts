@@ -18,7 +18,13 @@ import { Response } from 'express';
 import { SharedFolderService } from '../services/shared-folder.service';
 import { PrismaService } from '../prisma.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiConsumes,
+  ApiBody,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { join } from 'path';
 import { existsSync, createReadStream } from 'fs';
 
@@ -27,21 +33,29 @@ import { existsSync, createReadStream } from 'fs';
 export class ImageUploadController {
   constructor(
     private readonly sharedFolderService: SharedFolderService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
   ) {}
 
   @Post(':inspectionId')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('image', {
-    storage: memoryStorage(),
-    fileFilter: (req, file, cb) => {
-      if (!file.mimetype.startsWith('image/')) {
-        return cb(new HttpException('이미지 파일만 업로드 가능합니다.', HttpStatus.BAD_REQUEST), false);
-      }
-      cb(null, true);
-    },
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB 제한
-  }))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return cb(
+            new HttpException(
+              '이미지 파일만 업로드 가능합니다.',
+              HttpStatus.BAD_REQUEST,
+            ),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB 제한
+    }),
+  )
   @ApiOperation({ summary: '이미지 업로드' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -62,14 +76,20 @@ export class ImageUploadController {
     @Param('inspectionId') inspectionId: string,
   ) {
     if (!file) {
-      throw new HttpException('이미지 파일이 첨부되지 않았습니다.', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        '이미지 파일이 첨부되지 않았습니다.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     try {
-      const result = await this.sharedFolderService.uploadImage(file, parseInt(inspectionId));
+      const result = await this.sharedFolderService.uploadImage(
+        file,
+        parseInt(inspectionId),
+      );
       return {
         message: '이미지 업로드 성공',
-        data: result
+        data: result,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -81,14 +101,16 @@ export class ImageUploadController {
   @ApiOperation({ summary: '검사별 이미지 목록 조회' })
   async getImagesByInspection(@Param('inspectionId') inspectionId: string) {
     try {
-      const images = await this.sharedFolderService.getImagesByInspection(parseInt(inspectionId));
-      
+      const images = await this.sharedFolderService.getImagesByInspection(
+        parseInt(inspectionId),
+      );
+
       return {
         message: '이미지 목록 조회 성공',
         data: {
           inspectionId: parseInt(inspectionId),
-          images: images
-        }
+          images: images,
+        },
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -106,8 +128,14 @@ export class ImageUploadController {
     try {
       // 파일 경로 구성
       const basePath = 'C:\\Users\\ghfud\\Desktop\\SmartQC.ver1\\images';
-      const filePath = join(basePath, 'inspections', inspectionId, type, filename);
-      
+      const filePath = join(
+        basePath,
+        'inspections',
+        inspectionId,
+        type,
+        filename,
+      );
+
       // 파일 존재 확인
       if (!existsSync(filePath)) {
         return res.status(404).json({ message: '이미지를 찾을 수 없습니다.' });
@@ -138,15 +166,22 @@ export class ImageUploadController {
   ) {
     try {
       // attachment 조회
-      const attachment = await this.prisma.attachment.findUnique({ where: { id: parseInt(id) } });
-      if (!attachment) return res.status(404).json({ message: 'Attachment not found' });
+      const attachment = await this.prisma.attachment.findUnique({
+        where: { id: parseInt(id) },
+      });
+      if (!attachment)
+        return res.status(404).json({ message: 'Attachment not found' });
       const fileName = attachment.fileName;
       const basePath = attachment.url;
       let filePath = '';
-      if (type === 'original') filePath = join(basePath, 'original', `${fileName}.jpg`);
-      if (type === 'thumbnail') filePath = join(basePath, 'thumbnail', `${fileName}-thumb.jpg`);
-      if (type === 'modal') filePath = join(basePath, 'modal', `${fileName}-modal.jpg`);
-      if (!existsSync(filePath)) return res.status(404).json({ message: 'File not found' });
+      if (type === 'original')
+        filePath = join(basePath, 'original', `${fileName}.jpg`);
+      if (type === 'thumbnail')
+        filePath = join(basePath, 'thumbnail', `${fileName}-thumb.jpg`);
+      if (type === 'modal')
+        filePath = join(basePath, 'modal', `${fileName}-modal.jpg`);
+      if (!existsSync(filePath))
+        return res.status(404).json({ message: 'File not found' });
       // Content-Type
       res.setHeader('Content-Type', 'image/jpeg');
       res.setHeader('Cache-Control', 'public, max-age=31536000');
@@ -163,13 +198,18 @@ export class ImageUploadController {
   async deleteImage(
     @Param('inspectionId') inspectionId: string,
     @Param('imageId') imageId: string,
-    @Body() imageData: { originalPath: string; thumbnailPath: string; modalPath: string },
+    @Body()
+    imageData: {
+      originalPath: string;
+      thumbnailPath: string;
+      modalPath: string;
+    },
   ) {
     try {
       await this.sharedFolderService.deleteImage(imageId, imageData);
       return {
         message: '이미지 삭제 성공',
-        data: { id: imageId }
+        data: { id: imageId },
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -186,11 +226,11 @@ export class ImageUploadController {
         message: '공유폴더 연결 테스트 성공',
         data: {
           status: 'connected',
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-} 
+}

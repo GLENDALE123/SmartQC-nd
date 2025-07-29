@@ -12,4 +12,4 @@ export class ProcessInspectionResponseDto {
   attachments: Array<any>;
   createdAt: string;
   updatedAt: string;
-} 
+}

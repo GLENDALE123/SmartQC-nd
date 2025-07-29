@@ -25,9 +25,9 @@ import { ResponseInterceptor } from './interceptors/response.interceptor';
   ],
   controllers: [AppController, AuthController],
   providers: [
-    AppService, 
-    JwtStrategy, 
-    AuthService, 
+    AppService,
+    JwtStrategy,
+    AuthService,
     PrismaService,
     {
       provide: APP_FILTER,

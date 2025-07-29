@@ -5,13 +5,19 @@ export class ColorInfo {
   @ApiProperty({ description: '색상 값' })
   value: string;
 
-  @ApiProperty({ description: '색상 타입', enum: ['hex', 'css', 'tailwind', 'unknown'] })
+  @ApiProperty({
+    description: '색상 타입',
+    enum: ['hex', 'css', 'tailwind', 'unknown'],
+  })
   type: string;
 
   @ApiProperty({ description: '표시용 색상 값' })
   displayValue: string;
 
-  @ApiProperty({ description: 'CSS에서 사용할 수 있는 색상 값', required: false })
+  @ApiProperty({
+    description: 'CSS에서 사용할 수 있는 색상 값',
+    required: false,
+  })
   cssValue?: string;
 }
 

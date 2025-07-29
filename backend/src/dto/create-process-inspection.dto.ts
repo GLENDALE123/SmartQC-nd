@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsNumber, IsString, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class ProcessInspectionDefectDto {
@@ -140,4 +147,4 @@ export class CreateProcessInspectionDto {
   @ValidateNested({ each: true })
   @Type(() => ProcessInspectionAttachmentDto)
   attachments?: ProcessInspectionAttachmentDto[];
-} 
+}

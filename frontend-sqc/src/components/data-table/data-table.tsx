@@ -28,21 +28,13 @@ interface DataTableProps<TData> extends React.HTMLAttributes<HTMLDivElement> {
   floatingBar?: React.ReactNode | null
 }
 
-export const DataTable = React.memo(<TData>({
+export function DataTable<TData>({
   table,
   floatingBar = null,
   children,
   className,
   ...props
-}: DataTableProps<TData>) => {
-  // 🔍 렌더링 추적 로그
-  console.log('🔄 DataTable 렌더링됨', {
-    timestamp: new Date().toISOString(),
-    rowCount: table.getRowModel().rows?.length || 0,
-    selectedRowCount: table.getFilteredSelectedRowModel().rows.length,
-    hasChildren: !!children
-  })
-
+}: DataTableProps<TData>) {
   return (
     <div
       className={cn("data-table-container", className)}
@@ -154,4 +146,4 @@ export const DataTable = React.memo(<TData>({
       </div>
     </div>
   )
-}) as <TData>(props: DataTableProps<TData>) => React.ReactElement
+}

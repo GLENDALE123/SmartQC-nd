@@ -28,7 +28,7 @@ interface DataTableToolbarProps<TData> {
   showDateFilter?: boolean
   dateFilterPlaceholder?: string
   isLoading?: boolean
-  isSearching?: boolean // 검색 중 상태 추가
+  isSearching?: boolean
   isUploading?: boolean
   uploadProgress?: number
   columnLabels?: Record<string, string>
@@ -36,7 +36,7 @@ interface DataTableToolbarProps<TData> {
   onGlobalFilterChange?: (value: string) => void
 }
 
-export const DataTableToolbar = memo(<TData>({
+function DataTableToolbarComponent<TData>({
   table,
   onRefresh,
   onExport,
@@ -48,45 +48,36 @@ export const DataTableToolbar = memo(<TData>({
   showDateFilter = false,
   dateFilterPlaceholder = "날짜 범위 선택",
   isLoading = false,
-  isSearching: externalIsSearching = false, // 외부에서 전달받은 검색 상태
+  isSearching: externalIsSearching = false,
   isUploading = false,
   uploadProgress = 0,
   globalFilter = "",
   onGlobalFilterChange,
   columnLabels = {},
-}: DataTableToolbarProps<TData>) => {
-  // 로컬 검색 상태 - 포커스 해제 방지
+}: DataTableToolbarProps<TData>) {
   const [localSearchValue, setLocalSearchValue] = useState(globalFilter)
-  
-  // 입력 필드 참조 - 포커스 관리용
   const inputRef = useRef<HTMLInputElement>(null)
-  
-  // 검색 중인지 확인 (외부 상태 우선, 없으면 로컬 상태 사용)
   const isSearching = externalIsSearching || (localSearchValue !== globalFilter && localSearchValue.length > 0)
   
-  // globalFilter가 외부에서 변경될 때 로컬 상태 동기화
   useEffect(() => {
     setLocalSearchValue(globalFilter)
   }, [globalFilter])
   
-  // 디바운스된 검색어 업데이트 (300ms로 통일)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (localSearchValue !== globalFilter) {
         onGlobalFilterChange?.(localSearchValue)
       }
-    }, 300) // 300ms 디바운스로 통일
+    }, 300)
     
     return () => clearTimeout(timer)
   }, [localSearchValue, globalFilter, onGlobalFilterChange])
 
-  // 메모이제이션된 핸들러 함수들
   const handleResetFilters = useCallback(() => {
     table.resetColumnFilters()
     onDateRangeChange?.(undefined)
-    setLocalSearchValue("") // 로컬 상태도 초기화
+    setLocalSearchValue("")
     onGlobalFilterChange?.("")
-    // 포커스 유지
     setTimeout(() => {
       inputRef.current?.focus()
     }, 0)
@@ -101,13 +92,10 @@ export const DataTableToolbar = memo(<TData>({
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-card border border-border rounded-lg shadow-sm">
-      {/* 상단 영역: 검색 및 필터 */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex flex-1 flex-col sm:flex-row gap-2">
-          {/* 검색 입력 */}
           <div className="relative flex-1 min-w-[200px] max-w-[300px]">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            {/* 검색 중 로딩 인디케이터 */}
             {isSearching && (
               <ReloadIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary animate-spin" />
             )}
@@ -118,16 +106,14 @@ export const DataTableToolbar = memo(<TData>({
               onChange={handleSearchChange}
               className={cn(
                 "h-9 pl-9 bg-background border-border",
-                isSearching ? "pr-9" : "pr-4", // 검색 중일 때 오른쪽 패딩 조정
+                isSearching ? "pr-9" : "pr-4",
                 "focus:ring-2 focus:ring-ring focus:border-transparent",
                 "transition-all duration-200",
-                isSearching && "border-primary/50" // 검색 중일 때 테두리 색상 변경
+                isSearching && "border-primary/50"
               )}
-              // disabled 제거 - 검색 필드는 항상 활성화 상태 유지
             />
           </div>
           
-          {/* 날짜 범위 필터 */}
           {showDateFilter && onDateRangeChange && (
             <div className="flex-shrink-0">
               <DateRangePicker
@@ -145,9 +131,7 @@ export const DataTableToolbar = memo(<TData>({
           )}
         </div>
         
-        {/* 우측 액션 버튼들 */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* 업로드 프로그레스바 - 업로드 중일 때만 표시 */}
           {isUploading && (
             <div className="flex items-center gap-3 mr-4">
               <div className="w-24">
@@ -157,7 +141,6 @@ export const DataTableToolbar = memo(<TData>({
             </div>
           )}
           
-          {/* 엑셀 업로드 버튼 */}
           {onUpload && (
             <Button
               variant="default"
@@ -182,7 +165,6 @@ export const DataTableToolbar = memo(<TData>({
             </Button>
           )}
           
-          {/* 내보내기 버튼 */}
           {onExport && (
             <Button
               variant="outline"
@@ -203,12 +185,9 @@ export const DataTableToolbar = memo(<TData>({
         </div>
       </div>
       
-      {/* 하단 영역: 필터 및 초기화 */}
       {(filterableColumns.length > 0 || isFiltered || onRefresh) && (
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
-          {/* 좌측: 패싯 필터들과 초기화 버튼 */}
           <div className="flex flex-wrap items-center gap-2">
-            {/* 패싯 필터들 */}
             {filterableColumns.map((column) => {
               const tableColumn = table.getColumn(column.id)
               if (!tableColumn) return null
@@ -246,7 +225,6 @@ export const DataTableToolbar = memo(<TData>({
               )
             })}
             
-            {/* 필터 초기화 버튼 */}
             {isFiltered && (
               <Button
                 variant="ghost"
@@ -265,9 +243,7 @@ export const DataTableToolbar = memo(<TData>({
             )}
           </div>
 
-          {/* 우측: 새로고침 및 컬럼 표시 버튼 */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {/* 새로고침 버튼 */}
             {onRefresh && (
               <Button
                 variant="outline"
@@ -290,11 +266,12 @@ export const DataTableToolbar = memo(<TData>({
               </Button>
             )}
             
-            {/* 컬럼 표시 버튼 */}
             <DataTableColumnsVisibility columnLabels={columnLabels} />
           </div>
         </div>
       )}
     </div>
   )
-}) as <TData>(props: DataTableToolbarProps<TData>) => React.ReactElement
+}
+
+export const DataTableToolbar = memo(DataTableToolbarComponent) as <TData>(props: DataTableToolbarProps<TData>) => React.ReactElement

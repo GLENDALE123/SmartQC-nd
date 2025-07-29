@@ -21,7 +21,10 @@ describe('FileValidationService', () => {
         buffer: Buffer.from('fake image data'),
       } as Express.Multer.File;
 
-      const result = service.validateFile(validFile, service.getImageValidationOptions());
+      const result = service.validateFile(
+        validFile,
+        service.getImageValidationOptions(),
+      );
 
       expect(result.isValid).toBe(true);
       expect(result.errors).toHaveLength(0);
@@ -35,10 +38,17 @@ describe('FileValidationService', () => {
         buffer: Buffer.from('fake large image data'),
       } as Express.Multer.File;
 
-      const result = service.validateFile(largeFile, service.getImageValidationOptions());
+      const result = service.validateFile(
+        largeFile,
+        service.getImageValidationOptions(),
+      );
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('파일 크기가 너무 큽니다'))).toBe(true);
+      expect(
+        result.errors.some((error) =>
+          error.includes('파일 크기가 너무 큽니다'),
+        ),
+      ).toBe(true);
     });
 
     it('should reject file with invalid MIME type', () => {
@@ -49,10 +59,17 @@ describe('FileValidationService', () => {
         buffer: Buffer.from('fake pdf data'),
       } as Express.Multer.File;
 
-      const result = service.validateFile(invalidFile, service.getImageValidationOptions());
+      const result = service.validateFile(
+        invalidFile,
+        service.getImageValidationOptions(),
+      );
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('지원하지 않는 파일 형식입니다'))).toBe(true);
+      expect(
+        result.errors.some((error) =>
+          error.includes('지원하지 않는 파일 형식입니다'),
+        ),
+      ).toBe(true);
     });
 
     it('should reject file with invalid extension', () => {
@@ -63,10 +80,17 @@ describe('FileValidationService', () => {
         buffer: Buffer.from('fake bmp data'),
       } as Express.Multer.File;
 
-      const result = service.validateFile(invalidFile, service.getImageValidationOptions());
+      const result = service.validateFile(
+        invalidFile,
+        service.getImageValidationOptions(),
+      );
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('지원하지 않는 파일 확장자입니다'))).toBe(true);
+      expect(
+        result.errors.some((error) =>
+          error.includes('지원하지 않는 파일 확장자입니다'),
+        ),
+      ).toBe(true);
     });
 
     it('should reject suspicious executable files', () => {
@@ -94,7 +118,9 @@ describe('FileValidationService', () => {
       const result = service.validateFile(traversalFile);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('파일명에 경로 문자가 포함되어 있습니다.');
+      expect(result.errors).toContain(
+        '파일명에 경로 문자가 포함되어 있습니다.',
+      );
     });
 
     it('should add warning for large files', () => {
@@ -105,10 +131,17 @@ describe('FileValidationService', () => {
         buffer: Buffer.from('fake large image data'),
       } as Express.Multer.File;
 
-      const result = service.validateFile(largeFile, service.getImageValidationOptions());
+      const result = service.validateFile(
+        largeFile,
+        service.getImageValidationOptions(),
+      );
 
       expect(result.isValid).toBe(true);
-      expect(result.warnings.some(warning => warning.includes('파일 크기가 큽니다'))).toBe(true);
+      expect(
+        result.warnings.some((warning) =>
+          warning.includes('파일 크기가 큽니다'),
+        ),
+      ).toBe(true);
     });
   });
 
@@ -129,7 +162,10 @@ describe('FileValidationService', () => {
         },
       ] as Express.Multer.File[];
 
-      const result = service.validateFiles(files, service.getImageValidationOptions());
+      const result = service.validateFiles(
+        files,
+        service.getImageValidationOptions(),
+      );
 
       expect(result.isValid).toBe(true);
       expect(result.errors).toHaveLength(0);
@@ -143,10 +179,17 @@ describe('FileValidationService', () => {
         buffer: Buffer.from(`fake image ${i}`),
       })) as Express.Multer.File[];
 
-      const result = service.validateFiles(files, service.getImageValidationOptions());
+      const result = service.validateFiles(
+        files,
+        service.getImageValidationOptions(),
+      );
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('파일 개수가 너무 많습니다'))).toBe(true);
+      expect(
+        result.errors.some((error) =>
+          error.includes('파일 개수가 너무 많습니다'),
+        ),
+      ).toBe(true);
     });
 
     it('should reject when total file size exceeds limit', () => {
@@ -157,10 +200,17 @@ describe('FileValidationService', () => {
         buffer: Buffer.from(`fake large image ${i}`),
       })) as Express.Multer.File[];
 
-      const result = service.validateFiles(files, service.getImageValidationOptions());
+      const result = service.validateFiles(
+        files,
+        service.getImageValidationOptions(),
+      );
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('파일 크기가 너무 큽니다'))).toBe(true);
+      expect(
+        result.errors.some((error) =>
+          error.includes('파일 크기가 너무 큽니다'),
+        ),
+      ).toBe(true);
     });
 
     it('should provide detailed error messages for individual files', () => {
@@ -182,7 +232,9 @@ describe('FileValidationService', () => {
       const result = service.validateFiles(files);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('파일 2 (invalid.exe)'))).toBe(true);
+      expect(
+        result.errors.some((error) => error.includes('파일 2 (invalid.exe)')),
+      ).toBe(true);
     });
   });
 

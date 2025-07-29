@@ -99,7 +99,7 @@ export class UploadProgressService {
         uploadId,
         stage: 'error',
         progress: 0,
-        message: '업로드가 취소되었습니다.'
+        message: '업로드가 취소되었습니다.',
       });
       subject.complete();
       this.progressSubjects.delete(uploadId);

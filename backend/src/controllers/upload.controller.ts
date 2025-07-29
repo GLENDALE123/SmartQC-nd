@@ -16,7 +16,13 @@ import * as XLSX from 'xlsx';
 // import { QualityHistoryService } from '../services/quality-history.service';
 import { UploadLogService } from '../services/upload-log.service';
 import { OrderService } from '../services/order.service';
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiConsumes,
+  ApiBody,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { Response, Request } from 'express';
 // import { excelUploadProgressMap } from '../services/excel-order.service';
 
@@ -30,16 +36,24 @@ export class UploadController {
   ) {}
 
   @Post('excel-orders')
-  @UseInterceptors(FileInterceptor('file', {
-    storage: memoryStorage(), // 메모리 저장소로 변경
-    fileFilter: (req, file, cb) => {
-      if (!file.originalname.match(/\.(xlsx|xls)$/)) {
-        return cb(new HttpException('엑셀 파일만 업로드 가능합니다.', HttpStatus.BAD_REQUEST), false);
-      }
-      cb(null, true);
-    },
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB 제한
-  }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(), // 메모리 저장소로 변경
+      fileFilter: (req, file, cb) => {
+        if (!file.originalname.match(/\.(xlsx|xls)$/)) {
+          return cb(
+            new HttpException(
+              '엑셀 파일만 업로드 가능합니다.',
+              HttpStatus.BAD_REQUEST,
+            ),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB 제한
+    }),
+  )
   @ApiOperation({ summary: '엑셀 파일로 발주(orders) 데이터 업로드' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -55,39 +69,52 @@ export class UploadController {
   })
   @ApiResponse({ status: 201, description: '엑셀 데이터 업로드 성공' })
   @ApiResponse({ status: 400, description: '엑셀 파일만 업로드 가능' })
-  async uploadExcelOrders(@UploadedFile() file: Express.Multer.File, @Req() req?: any) {
+  async uploadExcelOrders(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req?: any,
+  ) {
     if (!file) {
-      throw new HttpException('파일이 첨부되지 않았습니다.', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        '파일이 첨부되지 않았습니다.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     try {
       // 엑셀 파일 파싱
       const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-      
+
       // 2번째 시트 확인
       if (workbook.SheetNames.length < 2) {
-        throw new HttpException('엑셀 파일에 2번째 시트가 없습니다.', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          '엑셀 파일에 2번째 시트가 없습니다.',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       const sheetName = workbook.SheetNames[1]; // 2번째 시트
       const sheet = workbook.Sheets[sheetName];
-      
+
       // 5번째 행부터 데이터 읽기 (헤더는 4번째 행)
-      const jsonData = XLSX.utils.sheet_to_json(sheet, { 
+      const jsonData = XLSX.utils.sheet_to_json(sheet, {
         range: 3, // 5번째 행부터 (0-based index)
         defval: null,
-        raw: false // 문자열로 변환
+        raw: false, // 문자열로 변환
       });
 
       if (!Array.isArray(jsonData) || jsonData.length === 0) {
-        throw new HttpException('엑셀 파일에서 유효한 데이터를 찾을 수 없습니다.', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          '엑셀 파일에서 유효한 데이터를 찾을 수 없습니다.',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       // 엑셀 데이터를 Order 모델에 맞게 변환
       const transformedData = jsonData.map((row: any, index: number) => {
         // 숫자 파싱 헬퍼 함수 (쉼표 제거 및 공백 정리)
         const parseNumber = (value: any): number | null => {
-          if (value === null || value === undefined || value === '') return null;
+          if (value === null || value === undefined || value === '')
+            return null;
           const cleanValue = String(value).replace(/,/g, '').trim();
           const parsed = parseInt(cleanValue);
           return isNaN(parsed) ? null : parsed;
@@ -128,7 +155,7 @@ export class UploadController {
           category3: row['구분2'] || null,
           salesManager: row['매출담당'] || null,
         };
-        
+
         return transformed;
       });
 
@@ -146,7 +173,7 @@ export class UploadController {
           success: result.success,
           failed: result.fail,
           details: result.details,
-          created: result.created.length
+          created: result.created.length,
         },
       });
 
@@ -165,11 +192,10 @@ export class UploadController {
             success: result.success,
             fail: result.fail,
             details: result.details,
-            created: result.created
-          }
-        }
+            created: result.created,
+          },
+        },
       };
-
     } catch (err) {
       // 업로드 실패 이력 저장
       await this.uploadLogService.createLog({
@@ -179,7 +205,7 @@ export class UploadController {
         failedCount: 1,
         results: {
           error: err.message || '알 수 없는 오류',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
       });
 
@@ -191,7 +217,9 @@ export class UploadController {
   }
 
   @Get('orders/by-final-order-number/:finalorderNumber')
-  async getOrderByFinalOrderNumber(@Param('finalorderNumber') finalorderNumber: string) {
+  async getOrderByFinalOrderNumber(
+    @Param('finalorderNumber') finalorderNumber: string,
+  ) {
     return this.orderService.findByOrderNumber(finalorderNumber);
   }
 
@@ -199,7 +227,7 @@ export class UploadController {
   async sseExcelOrdersProgress(
     @Param() params: any,
     @Req() req: Request,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
     // authToken을 쿼리에서 추출 (실제 서비스에서는 JWT 검증 필요)
     const userId = req.query.authToken as string;
@@ -207,7 +235,7 @@ export class UploadController {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders && res.flushHeaders();
-    
+
     // 임시로 완료된 상태로 응답
     const progress = { progress: 1, total: 1 };
     res.write(`data: ${JSON.stringify(progress)}\n\n`);

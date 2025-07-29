@@ -8,12 +8,12 @@ import { SharedFolderService } from './shared-folder.service';
 export class ProcessInspectionService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly sharedFolderService: SharedFolderService
+    private readonly sharedFolderService: SharedFolderService,
   ) {}
 
   async create(dto: CreateProcessInspectionDto) {
     const { defects, attachments, rounds, ...rest } = dto;
-    
+
     // orderNumbers 기반으로 검사 생성 (batchId 로직 제거)
     const inspection = await this.prisma.processInspection.create({
       data: {
@@ -46,18 +46,20 @@ export class ProcessInspectionService {
         afterPack: dto.afterPack,
         // rounds 데이터 생성 로직 유지
         rounds: {
-          create: rounds?.map(r => ({
-            label: r.label,
-            qty: r.qty,
-          })) || [],
+          create:
+            rounds?.map((r) => ({
+              label: r.label,
+              qty: r.qty,
+            })) || [],
         },
         defects: {
-          create: defects?.map(d => ({
-            defectTypeId: d.defectTypeId,
-            customType: d.customType,
-            count: d.count,
-            details: d.details,
-          })) || [],
+          create:
+            defects?.map((d) => ({
+              defectTypeId: d.defectTypeId,
+              customType: d.customType,
+              count: d.count,
+              details: d.details,
+            })) || [],
         },
       },
       include: {
@@ -78,7 +80,7 @@ export class ProcessInspectionService {
           await this.sharedFolderService.uploadImageWithInspectionId(
             attachment.file,
             inspection.id,
-            'process'
+            'process',
           );
         }
       }
@@ -105,62 +107,73 @@ export class ProcessInspectionService {
         defects: true,
       },
     });
-    if (!inspection) throw new NotFoundException('공정검사 내역을 찾을 수 없습니다.');
+    if (!inspection)
+      throw new NotFoundException('공정검사 내역을 찾을 수 없습니다.');
     return inspection;
   }
 
   async update(id: number, dto: UpdateProcessInspectionDto) {
     // 기존 rounds와 defects 삭제 후 재생성 (attachments는 유지)
-    await this.prisma.processInspectionRound.deleteMany({ where: { inspectionId: id } });
-    await this.prisma.processInspectionDefect.deleteMany({ where: { inspectionId: id } });
+    await this.prisma.processInspectionRound.deleteMany({
+      where: { inspectionId: id },
+    });
+    await this.prisma.processInspectionDefect.deleteMany({
+      where: { inspectionId: id },
+    });
     const { defects, attachments, rounds, ...rest } = dto;
-    
+
     const updateData: any = {};
-    
+
     // 주문 정보 업데이트 (orderNumbers 기반)
-    if (dto.orderNumbers !== undefined) updateData.orderNumbers = dto.orderNumbers;
+    if (dto.orderNumbers !== undefined)
+      updateData.orderNumbers = dto.orderNumbers;
     if (dto.client !== undefined) updateData.client = dto.client;
     if (dto.productName !== undefined) updateData.productName = dto.productName;
     if (dto.partName !== undefined) updateData.partName = dto.partName;
-    if (dto.specification !== undefined) updateData.specification = dto.specification;
+    if (dto.specification !== undefined)
+      updateData.specification = dto.specification;
     if (dto.manager !== undefined) updateData.manager = dto.manager;
-    
+
     // 검사 데이터 업데이트
-    if (dto.inspectionDate !== undefined) updateData.inspectionDate = new Date(dto.inspectionDate);
+    if (dto.inspectionDate !== undefined)
+      updateData.inspectionDate = new Date(dto.inspectionDate);
     if (dto.totalQty !== undefined) updateData.totalQty = dto.totalQty;
     if (dto.defectQty !== undefined) updateData.defectQty = dto.defectQty;
     if (dto.notes !== undefined) updateData.notes = dto.notes;
-    
+
     // 공정검사 특화 필드들 처리 유지
     if (dto.paintPrimer !== undefined) updateData.paintPrimer = dto.paintPrimer;
-    if (dto.paintTopcoat !== undefined) updateData.paintTopcoat = dto.paintTopcoat;
+    if (dto.paintTopcoat !== undefined)
+      updateData.paintTopcoat = dto.paintTopcoat;
     if (dto.line !== undefined) updateData.line = dto.line;
     if (dto.subLine !== undefined) updateData.subLine = dto.subLine;
     if (dto.peelingTest !== undefined) updateData.peelingTest = dto.peelingTest;
     if (dto.colorDiff !== undefined) updateData.colorDiff = dto.colorDiff;
     if (dto.extraWork !== undefined) updateData.extraWork = dto.extraWork;
     if (dto.lineSpeed !== undefined) updateData.lineSpeed = dto.lineSpeed;
-    if (dto.spindleRatio !== undefined) updateData.spindleRatio = dto.spindleRatio;
+    if (dto.spindleRatio !== undefined)
+      updateData.spindleRatio = dto.spindleRatio;
     if (dto.uvCond !== undefined) updateData.uvCond = dto.uvCond;
     if (dto.irCond !== undefined) updateData.irCond = dto.irCond;
     if (dto.jig !== undefined) updateData.jig = dto.jig;
-    if (dto.injectionPack !== undefined) updateData.injectionPack = dto.injectionPack;
+    if (dto.injectionPack !== undefined)
+      updateData.injectionPack = dto.injectionPack;
     if (dto.afterPack !== undefined) updateData.afterPack = dto.afterPack;
-    
+
     // rounds 재생성
     if (rounds) {
       updateData.rounds = {
-        create: rounds.map(r => ({
+        create: rounds.map((r) => ({
           label: r.label,
           qty: r.qty,
         })),
       };
     }
-    
+
     // defects 재생성
     if (defects) {
       updateData.defects = {
-        create: defects.map(d => ({
+        create: defects.map((d) => ({
           defectTypeId: d.defectTypeId,
           customType: d.customType,
           count: d.count,
@@ -168,7 +181,7 @@ export class ProcessInspectionService {
         })),
       };
     }
-    
+
     const inspection = await this.prisma.processInspection.update({
       where: { id },
       data: updateData,
@@ -190,7 +203,7 @@ export class ProcessInspectionService {
           await this.sharedFolderService.uploadImageWithInspectionId(
             attachment.file,
             inspection.id,
-            'process'
+            'process',
           );
         }
       }
@@ -202,20 +215,26 @@ export class ProcessInspectionService {
   async remove(id: number) {
     // 먼저 검사 폴더 삭제
     await this.sharedFolderService.deleteInspectionFolder(id);
-    
+
     // DB에서 관련 데이터 삭제
-    await this.prisma.processInspectionRound.deleteMany({ where: { inspectionId: id } });
-    await this.prisma.processInspectionDefect.deleteMany({ where: { inspectionId: id } });
-    await this.prisma.attachment.deleteMany({ where: { processInspectionId: id } });
+    await this.prisma.processInspectionRound.deleteMany({
+      where: { inspectionId: id },
+    });
+    await this.prisma.processInspectionDefect.deleteMany({
+      where: { inspectionId: id },
+    });
+    await this.prisma.attachment.deleteMany({
+      where: { processInspectionId: id },
+    });
     return this.prisma.processInspection.delete({ where: { id } });
   }
 
-  async getReferences(params: { 
-    orderNumbers?: string[]; 
-    orderNumber?: string; 
-    productName?: string; 
-    partName?: string; 
-    client?: string 
+  async getReferences(params: {
+    orderNumbers?: string[];
+    orderNumber?: string;
+    productName?: string;
+    partName?: string;
+    client?: string;
   }) {
     const whereConditions: any = {};
 
@@ -231,7 +250,7 @@ export class ProcessInspectionService {
     // orderNumbers가 있으면 해당 발주번호들과 겹치는 검사들 조회
     if (orderNumbersToSearch.length > 0) {
       whereConditions.orderNumbers = {
-        hasSome: orderNumbersToSearch
+        hasSome: orderNumbersToSearch,
       };
     }
 
@@ -239,21 +258,21 @@ export class ProcessInspectionService {
     if (params.productName) {
       whereConditions.productName = {
         contains: params.productName,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
     if (params.partName) {
       whereConditions.partName = {
         contains: params.partName,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
     if (params.client) {
       whereConditions.client = {
         contains: params.client,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
@@ -271,4 +290,4 @@ export class ProcessInspectionService {
       take: 10, // 최대 10개까지 참고 이력 조회
     });
   }
-} 
+}

@@ -11,4 +11,4 @@ export class ShipmentInspectionResponseDto {
   attachments: Array<any>;
   createdAt: string;
   updatedAt: string;
-} 
+}

@@ -69,7 +69,7 @@ describe('IncomingInspectionService', () => {
         notes: 'Test notes',
         defects: [
           { defectTypeId: 1, count: 3 },
-          { customType: 'Custom defect', count: 2 }
+          { customType: 'Custom defect', count: 2 },
         ],
       };
 
@@ -81,7 +81,9 @@ describe('IncomingInspectionService', () => {
         attachments: [],
       };
 
-      mockPrismaService.incomingInspection.create.mockResolvedValue(mockInspection);
+      mockPrismaService.incomingInspection.create.mockResolvedValue(
+        mockInspection,
+      );
 
       const result = await service.create(dto);
 
@@ -98,7 +100,7 @@ describe('IncomingInspectionService', () => {
           defectQty: dto.defectQty,
           notes: dto.notes,
           defects: {
-            create: dto.defects.map(d => ({
+            create: dto.defects.map((d) => ({
               defectTypeId: d.defectTypeId,
               customType: d.customType,
               count: d.count,
@@ -132,7 +134,7 @@ describe('IncomingInspectionService', () => {
         defectQty: 0,
         defects: [],
         attachments: [
-          { file: { originalname: 'test.jpg' } as Express.Multer.File }
+          { file: { originalname: 'test.jpg' } as Express.Multer.File },
         ],
       };
 
@@ -144,16 +146,18 @@ describe('IncomingInspectionService', () => {
         attachments: [],
       };
 
-      mockPrismaService.incomingInspection.create.mockResolvedValue(mockInspection);
-      mockSharedFolderService.uploadImageWithInspectionId.mockResolvedValue(undefined);
+      mockPrismaService.incomingInspection.create.mockResolvedValue(
+        mockInspection,
+      );
+      mockSharedFolderService.uploadImageWithInspectionId.mockResolvedValue(
+        undefined,
+      );
 
       await service.create(dto);
 
-      expect(mockSharedFolderService.uploadImageWithInspectionId).toHaveBeenCalledWith(
-        dto.attachments![0].file,
-        1,
-        'incoming'
-      );
+      expect(
+        mockSharedFolderService.uploadImageWithInspectionId,
+      ).toHaveBeenCalledWith(dto.attachments[0].file, 1, 'incoming');
     });
   });
 
@@ -175,11 +179,15 @@ describe('IncomingInspectionService', () => {
         },
       ];
 
-      mockPrismaService.incomingInspection.findMany.mockResolvedValue(mockReferences);
+      mockPrismaService.incomingInspection.findMany.mockResolvedValue(
+        mockReferences,
+      );
 
       const result = await service.getReferences(params);
 
-      expect(mockPrismaService.incomingInspection.findMany).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.incomingInspection.findMany,
+      ).toHaveBeenCalledWith({
         where: {
           orderNumbers: {
             hasSome: params.orderNumbers,
@@ -217,11 +225,15 @@ describe('IncomingInspectionService', () => {
       };
 
       const mockReferences: any[] = [];
-      mockPrismaService.incomingInspection.findMany.mockResolvedValue(mockReferences);
+      mockPrismaService.incomingInspection.findMany.mockResolvedValue(
+        mockReferences,
+      );
 
       const result = await service.getReferences(params);
 
-      expect(mockPrismaService.incomingInspection.findMany).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.incomingInspection.findMany,
+      ).toHaveBeenCalledWith({
         where: {
           productName: {
             contains: params.productName,
@@ -257,11 +269,15 @@ describe('IncomingInspectionService', () => {
         },
       ];
 
-      mockPrismaService.incomingInspection.findMany.mockResolvedValue(mockReferences);
+      mockPrismaService.incomingInspection.findMany.mockResolvedValue(
+        mockReferences,
+      );
 
       const result = await service.getReferences(params);
 
-      expect(mockPrismaService.incomingInspection.findMany).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.incomingInspection.findMany,
+      ).toHaveBeenCalledWith({
         where: {
           orderNumbers: {
             hasSome: ['T00000-1'],

@@ -9,7 +9,14 @@ export class UnifiedInspectionService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getRecentInspections(query: RecentInspectionsQueryDto) {
-    const { orderNumber, productName, partName, type, limit = 10, page = 1 } = query;
+    const {
+      orderNumber,
+      productName,
+      partName,
+      type,
+      limit = 10,
+      page = 1,
+    } = query;
     const skip = (page - 1) * limit;
 
     // 공통 where 조건 구성
@@ -18,21 +25,21 @@ export class UnifiedInspectionService {
 
       if (orderNumber) {
         where.orderNumbers = {
-          hasSome: [orderNumber]
+          hasSome: [orderNumber],
         };
       }
 
       if (productName) {
         where.productName = {
           contains: productName,
-          mode: 'insensitive'
+          mode: 'insensitive',
         };
       }
 
       if (partName) {
         where.partName = {
           contains: partName,
-          mode: 'insensitive'
+          mode: 'insensitive',
         };
       }
 
@@ -45,10 +52,10 @@ export class UnifiedInspectionService {
     const includeCondition = {
       defects: {
         include: {
-          defectType: true
-        }
+          defectType: true,
+        },
       },
-      attachments: true
+      attachments: true,
     };
 
     let results: any[] = [];
@@ -61,14 +68,14 @@ export class UnifiedInspectionService {
           include: includeCondition,
           orderBy: { inspectionDate: 'desc' },
           skip: type === 'incoming' ? skip : 0,
-          take: type === 'incoming' ? limit : undefined
+          take: type === 'incoming' ? limit : undefined,
         }),
-        this.prisma.incomingInspection.count({ where: whereCondition })
+        this.prisma.incomingInspection.count({ where: whereCondition }),
       ]);
 
-      const mappedIncoming = incomingInspections.map(inspection => ({
+      const mappedIncoming = incomingInspections.map((inspection) => ({
         ...inspection,
-        type: 'incoming' as const
+        type: 'incoming' as const,
       }));
 
       if (type === 'incoming') {
@@ -86,18 +93,18 @@ export class UnifiedInspectionService {
           where: whereCondition,
           include: {
             ...includeCondition,
-            rounds: true
+            rounds: true,
           },
           orderBy: { inspectionDate: 'desc' },
           skip: type === 'process' ? skip : 0,
-          take: type === 'process' ? limit : undefined
+          take: type === 'process' ? limit : undefined,
         }),
-        this.prisma.processInspection.count({ where: whereCondition })
+        this.prisma.processInspection.count({ where: whereCondition }),
       ]);
 
-      const mappedProcess = processInspections.map(inspection => ({
+      const mappedProcess = processInspections.map((inspection) => ({
         ...inspection,
-        type: 'process' as const
+        type: 'process' as const,
       }));
 
       if (type === 'process') {
@@ -121,24 +128,24 @@ export class UnifiedInspectionService {
                   include: {
                     defects: {
                       include: {
-                        defectType: true
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                        defectType: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           orderBy: { inspectionDate: 'desc' },
           skip: type === 'shipment' ? skip : 0,
-          take: type === 'shipment' ? limit : undefined
+          take: type === 'shipment' ? limit : undefined,
         }),
-        this.prisma.shipmentInspection.count({ where: whereCondition })
+        this.prisma.shipmentInspection.count({ where: whereCondition }),
       ]);
 
-      const mappedShipment = shipmentInspections.map(inspection => ({
+      const mappedShipment = shipmentInspections.map((inspection) => ({
         ...inspection,
-        type: 'shipment' as const
+        type: 'shipment' as const,
       }));
 
       if (type === 'shipment') {
@@ -152,14 +159,20 @@ export class UnifiedInspectionService {
 
     // 전체 검사 유형을 조회하는 경우 날짜순으로 정렬하고 페이지네이션 적용
     if (!type) {
-      results.sort((a, b) => new Date(b.inspectionDate).getTime() - new Date(a.inspectionDate).getTime());
+      results.sort(
+        (a, b) =>
+          new Date(b.inspectionDate).getTime() -
+          new Date(a.inspectionDate).getTime(),
+      );
       const paginatedResults = results.slice(skip, skip + limit);
       results = paginatedResults;
     }
 
     // DTO로 변환
-    const transformedResults = results.map(inspection => 
-      plainToClass(UnifiedInspectionResponseDto, inspection, { excludeExtraneousValues: true })
+    const transformedResults = results.map((inspection) =>
+      plainToClass(UnifiedInspectionResponseDto, inspection, {
+        excludeExtraneousValues: true,
+      }),
     );
 
     return {
@@ -167,11 +180,14 @@ export class UnifiedInspectionService {
       total: totalCount,
       page,
       limit,
-      totalPages: Math.ceil(totalCount / limit)
+      totalPages: Math.ceil(totalCount / limit),
     };
   }
 
-  async getInspectionById(id: number, type: 'incoming' | 'process' | 'shipment') {
+  async getInspectionById(
+    id: number,
+    type: 'incoming' | 'process' | 'shipment',
+  ) {
     let inspection: any;
 
     switch (type) {
@@ -181,11 +197,11 @@ export class UnifiedInspectionService {
           include: {
             defects: {
               include: {
-                defectType: true
-              }
+                defectType: true,
+              },
             },
-            attachments: true
-          }
+            attachments: true,
+          },
         });
         break;
 
@@ -195,12 +211,12 @@ export class UnifiedInspectionService {
           include: {
             defects: {
               include: {
-                defectType: true
-              }
+                defectType: true,
+              },
             },
             attachments: true,
-            rounds: true
-          }
+            rounds: true,
+          },
         });
         break;
 
@@ -215,14 +231,14 @@ export class UnifiedInspectionService {
                   include: {
                     defects: {
                       include: {
-                        defectType: true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+                        defectType: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         });
         break;
     }
@@ -233,15 +249,19 @@ export class UnifiedInspectionService {
 
     // 출하검사의 경우 defects를 rounds.workers.defects에서 추출
     if (type === 'shipment') {
-      const allDefects = inspection.rounds.flatMap((round: any) => 
-        round.workers.flatMap((worker: any) => worker.defects)
+      const allDefects = inspection.rounds.flatMap((round: any) =>
+        round.workers.flatMap((worker: any) => worker.defects),
       );
       inspection.defects = allDefects;
     }
 
-    return plainToClass(UnifiedInspectionResponseDto, {
-      ...inspection,
-      type
-    }, { excludeExtraneousValues: true });
+    return plainToClass(
+      UnifiedInspectionResponseDto,
+      {
+        ...inspection,
+        type,
+      },
+      { excludeExtraneousValues: true },
+    );
   }
 }

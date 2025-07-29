@@ -46,7 +46,7 @@ export class FileValidationService {
    */
   validateFile(
     file: Express.Multer.File,
-    options: FileValidationOptions = this.defaultImageOptions
+    options: FileValidationOptions = this.defaultImageOptions,
   ): FileValidationResult {
     const result: FileValidationResult = {
       isValid: true,
@@ -65,15 +65,18 @@ export class FileValidationService {
     if (options.maxFileSize && file.size > options.maxFileSize) {
       result.isValid = false;
       result.errors.push(
-        `파일 크기가 너무 큽니다. 최대 크기: ${this.formatFileSize(options.maxFileSize)}`
+        `파일 크기가 너무 큽니다. 최대 크기: ${this.formatFileSize(options.maxFileSize)}`,
       );
     }
 
     // Validate MIME type
-    if (options.allowedMimeTypes && !options.allowedMimeTypes.includes(file.mimetype)) {
+    if (
+      options.allowedMimeTypes &&
+      !options.allowedMimeTypes.includes(file.mimetype)
+    ) {
       result.isValid = false;
       result.errors.push(
-        `지원하지 않는 파일 형식입니다. 허용된 형식: ${options.allowedMimeTypes.join(', ')}`
+        `지원하지 않는 파일 형식입니다. 허용된 형식: ${options.allowedMimeTypes.join(', ')}`,
       );
     }
 
@@ -83,7 +86,7 @@ export class FileValidationService {
       if (!options.allowedExtensions.includes(extension)) {
         result.isValid = false;
         result.errors.push(
-          `지원하지 않는 파일 확장자입니다. 허용된 확장자: ${options.allowedExtensions.join(', ')}`
+          `지원하지 않는 파일 확장자입니다. 허용된 확장자: ${options.allowedExtensions.join(', ')}`,
         );
       }
     }
@@ -96,8 +99,11 @@ export class FileValidationService {
     }
 
     // Performance warnings
-    if (file.size > 5 * 1024 * 1024) { // 5MB
-      result.warnings.push('파일 크기가 큽니다. 업로드 시간이 오래 걸릴 수 있습니다.');
+    if (file.size > 5 * 1024 * 1024) {
+      // 5MB
+      result.warnings.push(
+        '파일 크기가 큽니다. 업로드 시간이 오래 걸릴 수 있습니다.',
+      );
     }
 
     return result;
@@ -108,7 +114,7 @@ export class FileValidationService {
    */
   validateFiles(
     files: Express.Multer.File[],
-    options: FileValidationOptions = this.defaultImageOptions
+    options: FileValidationOptions = this.defaultImageOptions,
   ): FileValidationResult {
     const result: FileValidationResult = {
       isValid: true,
@@ -119,7 +125,9 @@ export class FileValidationService {
     // Check file count
     if (options.maxFiles && files.length > options.maxFiles) {
       result.isValid = false;
-      result.errors.push(`파일 개수가 너무 많습니다. 최대 ${options.maxFiles}개까지 허용됩니다.`);
+      result.errors.push(
+        `파일 개수가 너무 많습니다. 최대 ${options.maxFiles}개까지 허용됩니다.`,
+      );
       return result;
     }
 
@@ -128,19 +136,22 @@ export class FileValidationService {
       const fileResult = this.validateFile(file, options);
       if (!fileResult.isValid) {
         result.isValid = false;
-        result.errors.push(`파일 ${index + 1} (${file.originalname}): ${fileResult.errors.join(', ')}`);
+        result.errors.push(
+          `파일 ${index + 1} (${file.originalname}): ${fileResult.errors.join(', ')}`,
+        );
       }
       result.warnings.push(...fileResult.warnings);
     });
 
     // Check total size
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
-    const maxTotalSize = (options.maxFileSize || 10 * 1024 * 1024) * (options.maxFiles || 10);
-    
+    const maxTotalSize =
+      (options.maxFileSize || 10 * 1024 * 1024) * (options.maxFiles || 10);
+
     if (totalSize > maxTotalSize) {
       result.isValid = false;
       result.errors.push(
-        `전체 파일 크기가 너무 큽니다. 최대 크기: ${this.formatFileSize(maxTotalSize)}`
+        `전체 파일 크기가 너무 큽니다. 최대 크기: ${this.formatFileSize(maxTotalSize)}`,
       );
     }
 
@@ -150,7 +161,9 @@ export class FileValidationService {
   /**
    * Validate file security
    */
-  private validateFileSecurity(file: Express.Multer.File): FileValidationResult {
+  private validateFileSecurity(
+    file: Express.Multer.File,
+  ): FileValidationResult {
     const result: FileValidationResult = {
       isValid: true,
       errors: [],
@@ -185,7 +198,11 @@ export class FileValidationService {
     }
 
     // Check for directory traversal attempts
-    if (file.originalname.includes('..') || file.originalname.includes('/') || file.originalname.includes('\\')) {
+    if (
+      file.originalname.includes('..') ||
+      file.originalname.includes('/') ||
+      file.originalname.includes('\\')
+    ) {
       result.isValid = false;
       result.errors.push('파일명에 경로 문자가 포함되어 있습니다.');
     }
@@ -198,7 +215,9 @@ export class FileValidationService {
    */
   private getFileExtension(filename: string): string {
     const lastDotIndex = filename.lastIndexOf('.');
-    return lastDotIndex !== -1 ? filename.substring(lastDotIndex).toLowerCase() : '';
+    return lastDotIndex !== -1
+      ? filename.substring(lastDotIndex).toLowerCase()
+      : '';
   }
 
   /**
@@ -206,11 +225,11 @@ export class FileValidationService {
    */
   private formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
-    
+
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 

@@ -190,7 +190,6 @@ export function useDataTable<TData, TValue>({
       searchParams
     )
     navigate(`${location.pathname}?${newParams}`, { replace: true })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageIndex, pageSize])
 
   // Handle server-side sorting
@@ -212,7 +211,6 @@ export function useDataTable<TData, TValue>({
       searchParams
     )
     navigate(`${location.pathname}?${newParams}`, { replace: true })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sorting])
 
   // Handle server-side filtering
@@ -281,11 +279,8 @@ export function useDataTable<TData, TValue>({
 
     table.setPageIndex(0)
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     JSON.stringify(debouncedSearchableColumnFilters),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     JSON.stringify(filterableColumnFilters),
   ])
 

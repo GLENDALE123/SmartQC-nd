@@ -69,7 +69,9 @@ describe('AuthService', () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
       const userWithHashedPassword = { ...mockUser, password: hashedPassword };
 
-      mockPrismaService.user.findUnique.mockResolvedValue(userWithHashedPassword);
+      mockPrismaService.user.findUnique.mockResolvedValue(
+        userWithHashedPassword,
+      );
       mockPrismaService.user.update.mockResolvedValue({
         ...userWithHashedPassword,
         lastLoginAt: new Date(),
@@ -86,17 +88,25 @@ describe('AuthService', () => {
         data: { lastLoginAt: expect.any(Date) },
       });
       expect(mockJwtService.sign).toHaveBeenCalledTimes(2);
-      expect(mockJwtService.sign).toHaveBeenNthCalledWith(1, {
-        sub: 1,
-        username: 'testuser',
-        role: UserRole.operator,
-        inspectionType: 'incoming',
-        processLine: 'line1',
-      }, { expiresIn: '15m' });
-      expect(mockJwtService.sign).toHaveBeenNthCalledWith(2, {
-        sub: 1,
-        type: 'refresh',
-      }, { expiresIn: '7d' });
+      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
+        1,
+        {
+          sub: 1,
+          username: 'testuser',
+          role: UserRole.operator,
+          inspectionType: 'incoming',
+          processLine: 'line1',
+        },
+        { expiresIn: '15m' },
+      );
+      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
+        2,
+        {
+          sub: 1,
+          type: 'refresh',
+        },
+        { expiresIn: '7d' },
+      );
       expect(result.access_token).toBe('jwt-token');
       expect(result.refresh_token).toBe('jwt-token');
       expect(result.user.inspectionType).toBe('incoming');
@@ -109,7 +119,9 @@ describe('AuthService', () => {
 
       mockPrismaService.user.findUnique.mockResolvedValue(inactiveUser);
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
       expect(mockPrismaService.user.update).not.toHaveBeenCalled();
     });
   });
@@ -126,7 +138,9 @@ describe('AuthService', () => {
 
     it('should return true for users with "all" inspection type', async () => {
       const userWithAllPermissions = { ...mockUser, inspectionType: 'all' };
-      mockPrismaService.user.findUnique.mockResolvedValue(userWithAllPermissions);
+      mockPrismaService.user.findUnique.mockResolvedValue(
+        userWithAllPermissions,
+      );
 
       const result = await service.hasInspectionPermission(1, 'incoming');
 
@@ -222,7 +236,7 @@ describe('AuthService', () => {
     it('should generate new tokens with valid refresh token', async () => {
       const refreshTokenDto = { refresh_token: 'valid-refresh-token' };
       const refreshPayload = { sub: 1, type: 'refresh' };
-      
+
       mockJwtService.verify.mockReturnValue(refreshPayload);
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockJwtService.sign
@@ -241,7 +255,7 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException for invalid refresh token type', async () => {
       const refreshTokenDto = { refresh_token: 'invalid-type-token' };
       const invalidPayload = { sub: 1, type: 'access' }; // Wrong type
-      
+
       mockJwtService.verify.mockReturnValue(invalidPayload);
 
       await expect(service.refreshToken(refreshTokenDto)).rejects.toThrow(
@@ -251,7 +265,7 @@ describe('AuthService', () => {
 
     it('should throw UnauthorizedException for expired refresh token', async () => {
       const refreshTokenDto = { refresh_token: 'expired-token' };
-      
+
       mockJwtService.verify.mockImplementation(() => {
         throw new Error('Token expired');
       });

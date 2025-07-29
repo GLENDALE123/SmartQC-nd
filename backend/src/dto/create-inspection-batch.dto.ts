@@ -8,4 +8,4 @@ export class CreateInspectionBatchDto {
   @IsString()
   @IsOptional()
   name?: string;
-} 
+}

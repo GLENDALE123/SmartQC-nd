@@ -13,7 +13,7 @@ function App() {
     
     // 인증 상태 초기화
     initializeAuth()
-  }, [initializeAuth]) // 의존성 배열에서 isAuthenticated, isLoading 제거하여 무한 루프 방지
+  }, [initializeAuth, isAuthenticated, isLoading])
 
   return <AppRoutes />
 }

@@ -143,19 +143,8 @@ export function useOrders(
     const currentParams = JSON.parse(paramsString);
     const cacheKey = getCacheKey(currentParams);
     
-    // 🔍 요청 추적 로그
-    console.log('🔄 useOrders fetchOrders 호출됨', {
-      timestamp: new Date().toISOString(),
-      params: currentParams,
-      cacheKey,
-      forceRefresh,
-      loading,
-      lastRequest: lastRequestRef.current
-    });
-    
     // 중복 요청 방지 - 동일한 요청이 이미 진행 중인 경우 무시
     if (lastRequestRef.current === cacheKey && loading && !forceRefresh) {
-      console.log('🔄 동일한 요청이 진행 중입니다. 중복 요청을 방지합니다.');
       return;
     }
     
@@ -165,7 +154,6 @@ export function useOrders(
     if (!forceRefresh) {
       const cachedData = orderCache.get<PaginatedResponse<Order>>(cacheKey);
       if (cachedData) {
-        console.log('📦 캐시된 데이터를 사용합니다:', cacheKey);
         setData(cachedData);
         setError(null);
         setLoading(false);
@@ -190,19 +178,15 @@ export function useOrders(
     setLoading(true);
     setError(null);
 
-    console.log('🌐 API 요청 시작:', cacheKey);
-
     try {
       const response = await orderApi.getOrders(currentParams);
       
       // 요청이 취소된 경우 무시
       if (abortControllerRef.current?.signal.aborted) {
-        console.log('❌ 요청이 취소되었습니다.');
         return;
       }
       
       if (response.success && response.data) {
-        console.log('✅ API 요청 성공:', cacheKey);
         setData(response.data);
         orderCache.set(cacheKey, response.data, staleTime);
         // onSuccess 콜백 직접 호출
@@ -219,7 +203,6 @@ export function useOrders(
     } catch (err) {
       // 요청이 취소된 경우 무시
       if (abortControllerRef.current?.signal.aborted) {
-        console.log('❌ 요청이 취소되었습니다.');
         return;
       }
       
@@ -233,8 +216,6 @@ export function useOrders(
           (error as any).code === 'ECONNREFUSED' ||
           error.message?.includes('ECONNREFUSED') ||
           error.message?.includes('서버에 연결할 수 없습니다')) {
-        
-        console.warn('🔌 네트워크 연결 오류로 인해 자동 재시도를 중단합니다.');
         
         // 주기적 리페치 중단
         if (intervalRef.current) {

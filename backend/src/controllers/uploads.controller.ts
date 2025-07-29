@@ -12,7 +12,13 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { SharedFolderService } from '../services/shared-folder.service';
@@ -30,15 +36,17 @@ export class UploadsController {
   constructor(
     private readonly sharedFolderService: SharedFolderService,
     private readonly fileValidationService: FileValidationService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
   ) {}
 
   @Post('images')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('image', {
-    storage: memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  }))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    }),
+  )
   @ApiOperation({ summary: '이미지 업로드' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -69,20 +77,27 @@ export class UploadsController {
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,
     @Body('inspectionId') inspectionId: string,
-    @Body('inspectionType') inspectionType?: 'incoming' | 'process' | 'shipment'
+    @Body('inspectionType')
+    inspectionType?: 'incoming' | 'process' | 'shipment',
   ) {
     if (!file) {
-      throw new HttpException('이미지 파일이 첨부되지 않았습니다.', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        '이미지 파일이 첨부되지 않았습니다.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     if (!inspectionId) {
-      throw new HttpException('검사 ID가 제공되지 않았습니다.', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        '검사 ID가 제공되지 않았습니다.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // 파일 검증
     const validationResult = this.fileValidationService.validateFile(
       file,
-      this.fileValidationService.getImageValidationOptions()
+      this.fileValidationService.getImageValidationOptions(),
     );
 
     if (!validationResult.isValid) {
@@ -92,24 +107,27 @@ export class UploadsController {
           errors: validationResult.errors,
           warnings: validationResult.warnings,
         },
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
     }
 
     try {
       const parsedInspectionId = parseInt(inspectionId);
-      
+
       let result;
       if (inspectionType) {
         // 검사 유형이 지정된 경우 해당 검사와 연결하여 업로드
         result = await this.sharedFolderService.uploadImageWithInspectionId(
           file,
           parsedInspectionId,
-          inspectionType
+          inspectionType,
         );
       } else {
         // 검사 유형이 지정되지 않은 경우 임시 업로드
-        result = await this.sharedFolderService.uploadImage(file, parsedInspectionId);
+        result = await this.sharedFolderService.uploadImage(
+          file,
+          parsedInspectionId,
+        );
       }
 
       return {
@@ -119,7 +137,7 @@ export class UploadsController {
     } catch (error) {
       throw new HttpException(
         `이미지 업로드 실패: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -127,8 +145,8 @@ export class UploadsController {
   @Get('images/:inspectionId')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '검사별 이미지 목록 조회' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: '이미지 목록 조회 성공',
     schema: {
       type: 'object',
@@ -160,10 +178,16 @@ export class UploadsController {
     try {
       const parsedInspectionId = parseInt(inspectionId);
       if (isNaN(parsedInspectionId)) {
-        throw new HttpException('유효하지 않은 검사 ID입니다.', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          '유효하지 않은 검사 ID입니다.',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
-      const images = await this.sharedFolderService.getImagesByInspection(parsedInspectionId);
+      const images =
+        await this.sharedFolderService.getImagesByInspection(
+          parsedInspectionId,
+        );
 
       return {
         message: '이미지 목록 조회 성공',
@@ -175,7 +199,7 @@ export class UploadsController {
     } catch (error) {
       throw new HttpException(
         `이미지 목록 조회 실패: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -193,7 +217,13 @@ export class UploadsController {
     try {
       // 파일 경로 구성
       const basePath = process.cwd() + '/../images';
-      const filePath = join(basePath, 'inspections', inspectionId, type, filename);
+      const filePath = join(
+        basePath,
+        'inspections',
+        inspectionId,
+        type,
+        filename,
+      );
 
       // 파일 존재 확인
       if (!existsSync(filePath)) {
@@ -226,10 +256,10 @@ export class UploadsController {
   ) {
     try {
       // attachment 조회
-      const attachment = await this.prisma.attachment.findUnique({ 
-        where: { id: parseInt(id) } 
+      const attachment = await this.prisma.attachment.findUnique({
+        where: { id: parseInt(id) },
       });
-      
+
       if (!attachment) {
         return res.status(404).json({ message: 'Attachment not found' });
       }
@@ -237,11 +267,14 @@ export class UploadsController {
       const fileName = attachment.fileName;
       const basePath = attachment.url;
       let filePath = '';
-      
-      if (type === 'original') filePath = join(basePath, 'original', `${fileName}.jpg`);
-      if (type === 'thumbnail') filePath = join(basePath, 'thumbnail', `${fileName}-thumb.jpg`);
-      if (type === 'modal') filePath = join(basePath, 'modal', `${fileName}-modal.jpg`);
-      
+
+      if (type === 'original')
+        filePath = join(basePath, 'original', `${fileName}.jpg`);
+      if (type === 'thumbnail')
+        filePath = join(basePath, 'thumbnail', `${fileName}-thumb.jpg`);
+      if (type === 'modal')
+        filePath = join(basePath, 'modal', `${fileName}-modal.jpg`);
+
       if (!existsSync(filePath)) {
         return res.status(404).json({ message: 'File not found' });
       }
@@ -249,7 +282,7 @@ export class UploadsController {
       // Content-Type 설정
       res.setHeader('Content-Type', 'image/jpeg');
       res.setHeader('Cache-Control', 'public, max-age=31536000');
-      
+
       const stream = createReadStream(filePath);
       stream.pipe(res);
     } catch (error) {
@@ -265,11 +298,16 @@ export class UploadsController {
   async deleteImage(
     @Param('inspectionId') inspectionId: string,
     @Param('imageId') imageId: string,
-    @Body() imageData?: { originalPath: string; thumbnailPath: string; modalPath: string },
+    @Body()
+    imageData?: {
+      originalPath: string;
+      thumbnailPath: string;
+      modalPath: string;
+    },
   ) {
     try {
       await this.sharedFolderService.deleteImage(imageId, imageData);
-      
+
       return {
         message: '이미지 삭제 성공',
         data: { id: imageId },
@@ -277,7 +315,7 @@ export class UploadsController {
     } catch (error) {
       throw new HttpException(
         `이미지 삭제 실패: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -290,7 +328,10 @@ export class UploadsController {
     try {
       const parsedInspectionId = parseInt(inspectionId);
       if (isNaN(parsedInspectionId)) {
-        throw new HttpException('유효하지 않은 검사 ID입니다.', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          '유효하지 않은 검사 ID입니다.',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       await this.sharedFolderService.deleteInspectionFolder(parsedInspectionId);
@@ -302,7 +343,7 @@ export class UploadsController {
     } catch (error) {
       throw new HttpException(
         `검사 이미지 삭제 실패: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -314,7 +355,7 @@ export class UploadsController {
   async testConnection() {
     try {
       await this.sharedFolderService.testAccess();
-      
+
       return {
         message: '이미지 저장소 연결 테스트 성공',
         data: {
@@ -325,7 +366,7 @@ export class UploadsController {
     } catch (error) {
       throw new HttpException(
         `연결 테스트 실패: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

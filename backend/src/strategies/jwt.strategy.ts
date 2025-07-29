@@ -21,15 +21,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any) {
     try {
       const user = await this.authService.validateUser(payload.sub);
-      
+
       if (user) {
         return {
           id: user.id,
           username: user.username,
-          role: user.role
+          role: user.role,
         };
       }
-      
+
       return null;
     } catch (error) {
       return null;

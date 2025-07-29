@@ -55,7 +55,10 @@ export class UnifiedInspectionResponseDto {
   @Expose()
   id: number;
 
-  @ApiProperty({ description: '검사 유형', enum: ['incoming', 'process', 'shipment'] })
+  @ApiProperty({
+    description: '검사 유형',
+    enum: ['incoming', 'process', 'shipment'],
+  })
   @Expose()
   type: 'incoming' | 'process' | 'shipment';
 

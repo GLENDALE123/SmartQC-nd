@@ -16,12 +16,42 @@ export class UploadLogController {
 
   @Get()
   @ApiOperation({ summary: '업로드 이력 리스트 조회' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: '가져올 개수(기본 20)' })
-  @ApiQuery({ name: 'offset', required: false, type: Number, description: '시작 위치(기본 0)' })
-  @ApiQuery({ name: 'userId', required: false, type: Number, description: '업로더 ID' })
-  @ApiQuery({ name: 'keyword', required: false, type: String, description: '파일명 검색' })
-  @ApiQuery({ name: 'from', required: false, type: String, description: '시작일(YYYY-MM-DD)' })
-  @ApiQuery({ name: 'to', required: false, type: String, description: '종료일(YYYY-MM-DD)' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: '가져올 개수(기본 20)',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: '시작 위치(기본 0)',
+  })
+  @ApiQuery({
+    name: 'userId',
+    required: false,
+    type: Number,
+    description: '업로더 ID',
+  })
+  @ApiQuery({
+    name: 'keyword',
+    required: false,
+    type: String,
+    description: '파일명 검색',
+  })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    type: String,
+    description: '시작일(YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    type: String,
+    description: '종료일(YYYY-MM-DD)',
+  })
   @ApiResponse({ status: 200, description: '업로드 이력 리스트' })
   async getLogs(
     @Query('limit') limit = 20,
@@ -40,5 +70,4 @@ export class UploadLogController {
       to,
     });
   }
-} 
- 
+}

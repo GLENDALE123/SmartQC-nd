@@ -40,7 +40,7 @@ interface ExportDialogProps {
   onOpenChange: (open: boolean) => void;
   data: Order[];
   selectedRows?: Order[];
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
   onExport?: () => void;
 }
 
@@ -210,7 +210,7 @@ export function ExportDialog({
             {/* 내보내기 범위 */}
             <div className="space-y-2">
               <Label>내보내기 범위</Label>
-              <RadioGroup value={exportScope} onValueChange={(value: any) => setExportScope(value)}>
+              <RadioGroup value={exportScope} onValueChange={(value: 'all' | 'filtered' | 'selected') => setExportScope(value)}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="all" id="scope-all" />
                   <Label htmlFor="scope-all">
@@ -284,7 +284,7 @@ export function ExportDialog({
                   
                   <div className="space-y-2">
                     <Label>구분자</Label>
-                    <RadioGroup value={csvDelimiter} onValueChange={(value: any) => setCsvDelimiter(value)}>
+                    <RadioGroup value={csvDelimiter} onValueChange={(value: ',' | ';' | '\t') => setCsvDelimiter(value)}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="," id="delimiter-comma" />
                         <Label htmlFor="delimiter-comma">쉼표 (,)</Label>
@@ -319,7 +319,7 @@ export function ExportDialog({
 
               <div className="space-y-2">
                 <Label>날짜 형식</Label>
-                <RadioGroup value={dateFormat} onValueChange={(value: any) => setDateFormat(value)}>
+                <RadioGroup value={dateFormat} onValueChange={(value: 'local' | 'iso' | 'short') => setDateFormat(value)}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="local" id="date-local" />
                     <Label htmlFor="date-local">로컬 형식 (2024-01-01 09:00:00)</Label>

@@ -4,4 +4,4 @@ export class CreateQualityHistoryDto {
   @IsArray()
   @ArrayNotEmpty()
   excelOrderIds: number[];
-} 
+}

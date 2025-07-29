@@ -127,7 +127,9 @@ describe('AuthController', () => {
 
       const result = await controller.refreshToken(refreshTokenDto);
 
-      expect(mockAuthService.refreshToken).toHaveBeenCalledWith(refreshTokenDto);
+      expect(mockAuthService.refreshToken).toHaveBeenCalledWith(
+        refreshTokenDto,
+      );
       expect(result).toEqual(mockAuthResponse);
       expect(result.access_token).toBeDefined();
       expect(result.refresh_token).toBeDefined();
@@ -138,7 +140,8 @@ describe('AuthController', () => {
     it('should logout user', async () => {
       const req = { user: mockUser };
       const logoutResponse = {
-        message: '성공적으로 로그아웃되었습니다. 클라이언트에서 토큰을 삭제해주세요.',
+        message:
+          '성공적으로 로그아웃되었습니다. 클라이언트에서 토큰을 삭제해주세요.',
       };
 
       mockAuthService.logout.mockResolvedValue(logoutResponse);

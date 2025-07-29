@@ -26,11 +26,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      
+
       if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
         const responseObj = exceptionResponse as any;
         message = responseObj.message || exception.message;
-        errorCode = responseObj.errorCode || this.getErrorCodeFromStatus(status);
+        errorCode =
+          responseObj.errorCode || this.getErrorCodeFromStatus(status);
         details = responseObj.details;
       } else {
         message = exceptionResponse as string;
@@ -40,7 +41,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       message = 'Internal server error';
       errorCode = 'INTERNAL_SERVER_ERROR';
-      details = process.env.NODE_ENV === 'development' ? exception.stack : undefined;
+      details =
+        process.env.NODE_ENV === 'development' ? exception.stack : undefined;
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       message = 'Unknown error occurred';

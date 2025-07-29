@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { DefectType, Prisma } from '@prisma/client';
 import { CreateDefectTypeDto } from '../dto/create-defect-type.dto';
@@ -11,12 +16,12 @@ export class DefectTypesService {
 
   constructor(
     private prisma: PrismaService,
-    private colorValidationService: ColorValidationService
+    private colorValidationService: ColorValidationService,
   ) {}
 
   async getDefectTypes(): Promise<any[]> {
     try {
-      const defectTypes = await this.prisma.defectType.findMany({ 
+      const defectTypes = await this.prisma.defectType.findMany({
         orderBy: { name: 'asc' },
         select: {
           id: true,
@@ -24,14 +29,16 @@ export class DefectTypesService {
           description: true,
           color: true,
           createdAt: true,
-          updatedAt: true
-        }
+          updatedAt: true,
+        },
       });
 
       // 색상 정보 처리
-      return defectTypes.map(defectType => ({
+      return defectTypes.map((defectType) => ({
         ...defectType,
-        colorInfo: defectType.color ? this.colorValidationService.generateColorInfo(defectType.color) : null
+        colorInfo: defectType.color
+          ? this.colorValidationService.generateColorInfo(defectType.color)
+          : null,
       }));
     } catch (error) {
       this.logger.error('Failed to fetch defect types', error);
@@ -41,7 +48,7 @@ export class DefectTypesService {
 
   async getDefectTypeById(id: number): Promise<any | null> {
     try {
-      const defectType = await this.prisma.defectType.findUnique({ 
+      const defectType = await this.prisma.defectType.findUnique({
         where: { id },
         select: {
           id: true,
@@ -49,8 +56,8 @@ export class DefectTypesService {
           description: true,
           color: true,
           createdAt: true,
-          updatedAt: true
-        }
+          updatedAt: true,
+        },
       });
 
       if (!defectType) {
@@ -60,7 +67,9 @@ export class DefectTypesService {
       // 색상 정보 처리
       return {
         ...defectType,
-        colorInfo: defectType.color ? this.colorValidationService.generateColorInfo(defectType.color) : null
+        colorInfo: defectType.color
+          ? this.colorValidationService.generateColorInfo(defectType.color)
+          : null,
       };
     } catch (error) {
       this.logger.error(`Failed to fetch defect type with id ${id}`, error);
@@ -68,15 +77,21 @@ export class DefectTypesService {
     }
   }
 
-  async createDefectType(createDefectTypeDto: CreateDefectTypeDto): Promise<any> {
+  async createDefectType(
+    createDefectTypeDto: CreateDefectTypeDto,
+  ): Promise<any> {
     try {
       // 색상 정규화
       const normalizedData = {
         ...createDefectTypeDto,
-        color: createDefectTypeDto.color ? this.colorValidationService.normalizeColor(createDefectTypeDto.color) : null
+        color: createDefectTypeDto.color
+          ? this.colorValidationService.normalizeColor(
+              createDefectTypeDto.color,
+            )
+          : null,
       };
 
-      const defectType = await this.prisma.defectType.create({ 
+      const defectType = await this.prisma.defectType.create({
         data: normalizedData,
         select: {
           id: true,
@@ -84,19 +99,23 @@ export class DefectTypesService {
           description: true,
           color: true,
           createdAt: true,
-          updatedAt: true
-        }
+          updatedAt: true,
+        },
       });
 
       // 색상 정보 처리
       return {
         ...defectType,
-        colorInfo: defectType.color ? this.colorValidationService.generateColorInfo(defectType.color) : null
+        colorInfo: defectType.color
+          ? this.colorValidationService.generateColorInfo(defectType.color)
+          : null,
       };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          this.logger.warn(`Attempt to create duplicate defect type: ${createDefectTypeDto.name}`);
+          this.logger.warn(
+            `Attempt to create duplicate defect type: ${createDefectTypeDto.name}`,
+          );
           throw new ConflictException('이미 존재하는 불량 유형입니다');
         }
       }
@@ -105,10 +124,15 @@ export class DefectTypesService {
     }
   }
 
-  async updateDefectType(id: number, updateDefectTypeDto: UpdateDefectTypeDto): Promise<any | null> {
+  async updateDefectType(
+    id: number,
+    updateDefectTypeDto: UpdateDefectTypeDto,
+  ): Promise<any | null> {
     try {
       // First check if the defect type exists
-      const existingDefectType = await this.prisma.defectType.findUnique({ where: { id } });
+      const existingDefectType = await this.prisma.defectType.findUnique({
+        where: { id },
+      });
       if (!existingDefectType) {
         return null;
       }
@@ -116,11 +140,15 @@ export class DefectTypesService {
       // 색상 정규화
       const normalizedData = {
         ...updateDefectTypeDto,
-        color: updateDefectTypeDto.color ? this.colorValidationService.normalizeColor(updateDefectTypeDto.color) : updateDefectTypeDto.color
+        color: updateDefectTypeDto.color
+          ? this.colorValidationService.normalizeColor(
+              updateDefectTypeDto.color,
+            )
+          : updateDefectTypeDto.color,
       };
 
-      const defectType = await this.prisma.defectType.update({ 
-        where: { id }, 
+      const defectType = await this.prisma.defectType.update({
+        where: { id },
         data: normalizedData,
         select: {
           id: true,
@@ -128,23 +156,29 @@ export class DefectTypesService {
           description: true,
           color: true,
           createdAt: true,
-          updatedAt: true
-        }
+          updatedAt: true,
+        },
       });
 
       // 색상 정보 처리
       return {
         ...defectType,
-        colorInfo: defectType.color ? this.colorValidationService.generateColorInfo(defectType.color) : null
+        colorInfo: defectType.color
+          ? this.colorValidationService.generateColorInfo(defectType.color)
+          : null,
       };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          this.logger.warn(`Attempt to update defect type to duplicate name: ${updateDefectTypeDto.name}`);
+          this.logger.warn(
+            `Attempt to update defect type to duplicate name: ${updateDefectTypeDto.name}`,
+          );
           throw new ConflictException('이미 존재하는 불량 유형입니다');
         }
         if (error.code === 'P2025') {
-          this.logger.warn(`Attempt to update non-existent defect type with id ${id}`);
+          this.logger.warn(
+            `Attempt to update non-existent defect type with id ${id}`,
+          );
           return null;
         }
       }
@@ -156,7 +190,9 @@ export class DefectTypesService {
   async deleteDefectType(id: number): Promise<boolean> {
     try {
       // First check if the defect type exists
-      const existingDefectType = await this.prisma.defectType.findUnique({ where: { id } });
+      const existingDefectType = await this.prisma.defectType.findUnique({
+        where: { id },
+      });
       if (!existingDefectType) {
         return false;
       }
@@ -173,12 +209,18 @@ export class DefectTypesService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
-          this.logger.warn(`Attempt to delete non-existent defect type with id ${id}`);
+          this.logger.warn(
+            `Attempt to delete non-existent defect type with id ${id}`,
+          );
           return false;
         }
         if (error.code === 'P2003') {
-          this.logger.warn(`Attempt to delete defect type with id ${id} that is referenced by other records`);
-          throw new ConflictException('사용 중인 불량 유형은 삭제할 수 없습니다');
+          this.logger.warn(
+            `Attempt to delete defect type with id ${id} that is referenced by other records`,
+          );
+          throw new ConflictException(
+            '사용 중인 불량 유형은 삭제할 수 없습니다',
+          );
         }
       }
       if (error instanceof ConflictException) {
@@ -194,13 +236,16 @@ export class DefectTypesService {
       const [incomingCount, processCount, shipmentCount] = await Promise.all([
         this.prisma.incomingInspectionDefect.count({ where: { defectTypeId } }),
         this.prisma.processInspectionDefect.count({ where: { defectTypeId } }),
-        this.prisma.shipmentInspectionDefect.count({ where: { defectTypeId } })
+        this.prisma.shipmentInspectionDefect.count({ where: { defectTypeId } }),
       ]);
 
       return incomingCount + processCount + shipmentCount;
     } catch (error) {
-      this.logger.error(`Failed to check defect type usage for id ${defectTypeId}`, error);
+      this.logger.error(
+        `Failed to check defect type usage for id ${defectTypeId}`,
+        error,
+      );
       throw error;
     }
   }
-} 
+}

@@ -68,7 +68,7 @@ describe('Auth (e2e)', () => {
       const { refresh_token } = loginResponse.body.data;
 
       // Add a small delay to ensure different timestamps
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Test refresh endpoint
       const refreshResponse = await request(app.getHttpServer())
@@ -88,8 +88,12 @@ describe('Auth (e2e)', () => {
       expect(refreshResponse.body.data.user.processLine).toBe('line1');
 
       // Verify new tokens are different from original
-      expect(refreshResponse.body.data.access_token).not.toBe(loginResponse.body.data.access_token);
-      expect(refreshResponse.body.data.refresh_token).not.toBe(loginResponse.body.data.refresh_token);
+      expect(refreshResponse.body.data.access_token).not.toBe(
+        loginResponse.body.data.access_token,
+      );
+      expect(refreshResponse.body.data.refresh_token).not.toBe(
+        loginResponse.body.data.refresh_token,
+      );
     });
 
     it('should return 401 for invalid refresh token', async () => {
@@ -100,7 +104,9 @@ describe('Auth (e2e)', () => {
         })
         .expect(401);
 
-      expect(response.body.message).toContain('유효하지 않거나 만료된 리프레시 토큰입니다');
+      expect(response.body.message).toContain(
+        '유효하지 않거나 만료된 리프레시 토큰입니다',
+      );
     });
 
     it('should return 401 for access token used as refresh token', async () => {
@@ -134,7 +140,9 @@ describe('Auth (e2e)', () => {
         })
         .expect(401);
 
-      expect(response.body.message).toContain('유효하지 않은 리프레시 토큰입니다');
+      expect(response.body.message).toContain(
+        '유효하지 않은 리프레시 토큰입니다',
+      );
     });
   });
 
@@ -173,14 +181,16 @@ describe('Auth (e2e)', () => {
         .expect(200);
 
       expect(logoutResponse.body.success).toBe(true);
-      expect(logoutResponse.body.data.message).toContain('성공적으로 로그아웃되었습니다');
-      expect(logoutResponse.body.data.message).toContain('클라이언트에서 토큰을 삭제해주세요');
+      expect(logoutResponse.body.data.message).toContain(
+        '성공적으로 로그아웃되었습니다',
+      );
+      expect(logoutResponse.body.data.message).toContain(
+        '클라이언트에서 토큰을 삭제해주세요',
+      );
     });
 
     it('should return 401 for logout without token', async () => {
-      await request(app.getHttpServer())
-        .post('/auth/logout')
-        .expect(401);
+      await request(app.getHttpServer()).post('/auth/logout').expect(401);
     });
 
     it('should return 401 for logout with invalid token', async () => {
@@ -198,11 +208,14 @@ describe('Auth (e2e)', () => {
       const response = await request(app.getHttpServer())
         .post('/auth/refresh')
         .send({
-          refresh_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjE2MDAwMDAwMDB9.invalid', // Expired token
+          refresh_token:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjE2MDAwMDAwMDB9.invalid', // Expired token
         })
         .expect(401);
 
-      expect(response.body.message).toContain('유효하지 않거나 만료된 리프레시 토큰입니다');
+      expect(response.body.message).toContain(
+        '유효하지 않거나 만료된 리프레시 토큰입니다',
+      );
     });
   });
 });

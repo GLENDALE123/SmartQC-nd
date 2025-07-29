@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, MinLength, IsOptional, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  MinLength,
+  IsOptional,
+  IsIn,
+} from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({ description: '사용자명' })
@@ -29,7 +35,11 @@ export class RegisterDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ description: '검사 유형', required: false, enum: ['incoming', 'process', 'shipment', 'all'] })
+  @ApiProperty({
+    description: '검사 유형',
+    required: false,
+    enum: ['incoming', 'process', 'shipment', 'all'],
+  })
   @IsOptional()
   @IsString()
   @IsIn(['incoming', 'process', 'shipment', 'all'])
@@ -58,7 +68,11 @@ export class UpdateProfileDto {
   @IsNotEmpty()
   name?: string;
 
-  @ApiProperty({ description: '검사 유형', required: false, enum: ['incoming', 'process', 'shipment', 'all'] })
+  @ApiProperty({
+    description: '검사 유형',
+    required: false,
+    enum: ['incoming', 'process', 'shipment', 'all'],
+  })
   @IsOptional()
   @IsString()
   @IsIn(['incoming', 'process', 'shipment', 'all'])

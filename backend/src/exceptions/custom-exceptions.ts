@@ -30,10 +30,10 @@ export class BusinessLogicException extends HttpException {
 
 export class ResourceNotFoundException extends HttpException {
   constructor(resource: string, id?: string | number) {
-    const message = id 
+    const message = id
       ? `${resource} with ID ${id} not found`
       : `${resource} not found`;
-    
+
     super(
       {
         message,

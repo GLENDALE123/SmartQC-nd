@@ -8,12 +8,12 @@ import { SharedFolderService } from './shared-folder.service';
 export class IncomingInspectionService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly sharedFolderService: SharedFolderService
+    private readonly sharedFolderService: SharedFolderService,
   ) {}
 
   async create(dto: CreateIncomingInspectionDto) {
     const { defects, attachments, ...rest } = dto;
-    
+
     // orderNumbers 기반으로 검사 생성 (batchId 로직 제거)
     const inspection = await this.prisma.incomingInspection.create({
       data: {
@@ -30,12 +30,13 @@ export class IncomingInspectionService {
         defectQty: dto.defectQty,
         notes: dto.notes,
         defects: {
-          create: defects?.map(d => ({
-            defectTypeId: d.defectTypeId,
-            customType: d.customType,
-            count: d.count,
-            details: d.details,
-          })) || [],
+          create:
+            defects?.map((d) => ({
+              defectTypeId: d.defectTypeId,
+              customType: d.customType,
+              count: d.count,
+              details: d.details,
+            })) || [],
         },
       },
       include: {
@@ -55,7 +56,7 @@ export class IncomingInspectionService {
           await this.sharedFolderService.uploadImageWithInspectionId(
             attachment.file,
             inspection.id,
-            'incoming'
+            'incoming',
           );
         }
       }
@@ -80,35 +81,41 @@ export class IncomingInspectionService {
         defects: true,
       },
     });
-    if (!inspection) throw new NotFoundException('수입검사 내역을 찾을 수 없습니다.');
+    if (!inspection)
+      throw new NotFoundException('수입검사 내역을 찾을 수 없습니다.');
     return inspection;
   }
 
   async update(id: number, dto: UpdateIncomingInspectionDto) {
     // 기존 defects 삭제 후 재생성 (attachments는 유지)
-    await this.prisma.incomingInspectionDefect.deleteMany({ where: { inspectionId: id } });
+    await this.prisma.incomingInspectionDefect.deleteMany({
+      where: { inspectionId: id },
+    });
     const { defects, attachments, ...rest } = dto;
-    
+
     const updateData: any = {};
-    
+
     // 주문 정보 업데이트 (orderNumbers 기반)
-    if (dto.orderNumbers !== undefined) updateData.orderNumbers = dto.orderNumbers;
+    if (dto.orderNumbers !== undefined)
+      updateData.orderNumbers = dto.orderNumbers;
     if (dto.client !== undefined) updateData.client = dto.client;
     if (dto.productName !== undefined) updateData.productName = dto.productName;
     if (dto.partName !== undefined) updateData.partName = dto.partName;
-    if (dto.specification !== undefined) updateData.specification = dto.specification;
+    if (dto.specification !== undefined)
+      updateData.specification = dto.specification;
     if (dto.manager !== undefined) updateData.manager = dto.manager;
-    
+
     // 검사 데이터 업데이트
-    if (dto.inspectionDate !== undefined) updateData.inspectionDate = new Date(dto.inspectionDate);
+    if (dto.inspectionDate !== undefined)
+      updateData.inspectionDate = new Date(dto.inspectionDate);
     if (dto.totalQty !== undefined) updateData.totalQty = dto.totalQty;
     if (dto.defectQty !== undefined) updateData.defectQty = dto.defectQty;
     if (dto.notes !== undefined) updateData.notes = dto.notes;
-    
+
     // defects 재생성
     if (defects) {
       updateData.defects = {
-        create: defects.map(d => ({
+        create: defects.map((d) => ({
           defectTypeId: d.defectTypeId,
           customType: d.customType,
           count: d.count,
@@ -116,7 +123,7 @@ export class IncomingInspectionService {
         })),
       };
     }
-    
+
     const inspection = await this.prisma.incomingInspection.update({
       where: { id },
       data: updateData,
@@ -137,7 +144,7 @@ export class IncomingInspectionService {
           await this.sharedFolderService.uploadImageWithInspectionId(
             attachment.file,
             inspection.id,
-            'incoming'
+            'incoming',
           );
         }
       }
@@ -149,19 +156,23 @@ export class IncomingInspectionService {
   async remove(id: number) {
     // 먼저 검사 폴더 삭제
     await this.sharedFolderService.deleteInspectionFolder(id);
-    
+
     // DB에서 관련 데이터 삭제
-    await this.prisma.incomingInspectionDefect.deleteMany({ where: { inspectionId: id } });
-    await this.prisma.attachment.deleteMany({ where: { incomingInspectionId: id } });
+    await this.prisma.incomingInspectionDefect.deleteMany({
+      where: { inspectionId: id },
+    });
+    await this.prisma.attachment.deleteMany({
+      where: { incomingInspectionId: id },
+    });
     return this.prisma.incomingInspection.delete({ where: { id } });
   }
 
-  async getReferences(params: { 
-    orderNumbers?: string[]; 
-    orderNumber?: string; 
-    productName?: string; 
-    partName?: string; 
-    client?: string 
+  async getReferences(params: {
+    orderNumbers?: string[];
+    orderNumber?: string;
+    productName?: string;
+    partName?: string;
+    client?: string;
   }) {
     const whereConditions: any = {};
 
@@ -177,7 +188,7 @@ export class IncomingInspectionService {
     // orderNumbers가 있으면 해당 발주번호들과 겹치는 검사들 조회
     if (orderNumbersToSearch.length > 0) {
       whereConditions.orderNumbers = {
-        hasSome: orderNumbersToSearch
+        hasSome: orderNumbersToSearch,
       };
     }
 
@@ -185,21 +196,21 @@ export class IncomingInspectionService {
     if (params.productName) {
       whereConditions.productName = {
         contains: params.productName,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
     if (params.partName) {
       whereConditions.partName = {
         contains: params.partName,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
     if (params.client) {
       whereConditions.client = {
         contains: params.client,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
@@ -216,4 +227,4 @@ export class IncomingInspectionService {
       take: 10, // 최대 10개까지 참고 이력 조회
     });
   }
-} 
+}

@@ -8,7 +8,7 @@ import { SharedFolderService } from './shared-folder.service';
 export class ShipmentInspectionService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly sharedFolderService: SharedFolderService
+    private readonly sharedFolderService: SharedFolderService,
   ) {}
 
   async create(dto: CreateShipmentInspectionDto) {
@@ -18,24 +18,27 @@ export class ShipmentInspectionService {
         ...rest,
         inspectionDate: new Date(rest.inspectionDate),
         rounds: {
-          create: rounds?.map(r => ({
-            date: new Date(r.date),
-            qty: r.qty,
-            defectQty: r.defectQty,
-            workers: {
-              create: r.workers?.map(w => ({
-                name: w.name,
-                defects: {
-                  create: w.defects?.map(d => ({
-                    defectTypeId: d.defectTypeId,
-                    customType: d.customType,
-                    count: d.count,
-                    details: d.details,
+          create:
+            rounds?.map((r) => ({
+              date: new Date(r.date),
+              qty: r.qty,
+              defectQty: r.defectQty,
+              workers: {
+                create:
+                  r.workers?.map((w) => ({
+                    name: w.name,
+                    defects: {
+                      create:
+                        w.defects?.map((d) => ({
+                          defectTypeId: d.defectTypeId,
+                          customType: d.customType,
+                          count: d.count,
+                          details: d.details,
+                        })) || [],
+                    },
                   })) || [],
-                },
-              })) || [],
-            },
-          })) || [],
+              },
+            })) || [],
         },
         // 이미지(attachment)는 별도 업로드로 처리
       },
@@ -64,7 +67,7 @@ export class ShipmentInspectionService {
           await this.sharedFolderService.uploadImageWithInspectionId(
             attachment.file,
             inspection.id,
-            'shipment'
+            'shipment',
           );
         }
       }
@@ -105,41 +108,47 @@ export class ShipmentInspectionService {
         },
       },
     });
-    if (!inspection) throw new NotFoundException('출하검사 내역을 찾을 수 없습니다.');
+    if (!inspection)
+      throw new NotFoundException('출하검사 내역을 찾을 수 없습니다.');
     return inspection;
   }
 
   async update(id: number, dto: UpdateShipmentInspectionDto) {
     // 중첩 구조 모두 삭제 후 재생성 (attachments는 유지)
-    await this.prisma.shipmentInspectionRound.deleteMany({ where: { inspectionId: id } });
+    await this.prisma.shipmentInspectionRound.deleteMany({
+      where: { inspectionId: id },
+    });
     const { rounds, attachments, ...rest } = dto;
     // undefined/null 필드 제거
     const cleanData = Object.fromEntries(
-      Object.entries(rest).filter(([_, v]) => v !== undefined && v !== null)
+      Object.entries(rest).filter(([_, v]) => v !== undefined && v !== null),
     );
     const inspection = await this.prisma.shipmentInspection.update({
       where: { id },
       data: {
         ...cleanData,
         rounds: {
-          create: rounds?.map(r => ({
-            date: r.date,
-            qty: r.qty,
-            defectQty: r.defectQty,
-            workers: {
-              create: r.workers?.map(w => ({
-                name: w.name,
-                defects: {
-                  create: w.defects?.map(d => ({
-                    defectTypeId: d.defectTypeId,
-                    customType: d.customType,
-                    count: d.count,
-                    details: d.details,
+          create:
+            rounds?.map((r) => ({
+              date: r.date,
+              qty: r.qty,
+              defectQty: r.defectQty,
+              workers: {
+                create:
+                  r.workers?.map((w) => ({
+                    name: w.name,
+                    defects: {
+                      create:
+                        w.defects?.map((d) => ({
+                          defectTypeId: d.defectTypeId,
+                          customType: d.customType,
+                          count: d.count,
+                          details: d.details,
+                        })) || [],
+                    },
                   })) || [],
-                },
-              })) || [],
-            },
-          })) || [],
+              },
+            })) || [],
         },
         // attachments는 기존 것을 유지 (이미지는 별도로 관리)
       },
@@ -161,19 +170,23 @@ export class ShipmentInspectionService {
   async remove(id: number) {
     // 먼저 검사 폴더 삭제
     await this.sharedFolderService.deleteInspectionFolder(id);
-    
+
     // DB에서 관련 데이터 삭제
-    await this.prisma.shipmentInspectionRound.deleteMany({ where: { inspectionId: id } });
-    await this.prisma.attachment.deleteMany({ where: { shipmentInspectionId: id } });
+    await this.prisma.shipmentInspectionRound.deleteMany({
+      where: { inspectionId: id },
+    });
+    await this.prisma.attachment.deleteMany({
+      where: { shipmentInspectionId: id },
+    });
     return this.prisma.shipmentInspection.delete({ where: { id } });
   }
 
-  async getReferences(params: { 
-    orderNumbers?: string[]; 
-    orderNumber?: string; 
-    productName?: string; 
-    partName?: string; 
-    client?: string 
+  async getReferences(params: {
+    orderNumbers?: string[];
+    orderNumber?: string;
+    productName?: string;
+    partName?: string;
+    client?: string;
   }) {
     const whereConditions: any = {};
 
@@ -189,7 +202,7 @@ export class ShipmentInspectionService {
     // orderNumbers가 있으면 해당 발주번호들과 겹치는 검사들 조회
     if (orderNumbersToSearch.length > 0) {
       whereConditions.orderNumbers = {
-        hasSome: orderNumbersToSearch
+        hasSome: orderNumbersToSearch,
       };
     }
 
@@ -197,21 +210,21 @@ export class ShipmentInspectionService {
     if (params.productName) {
       whereConditions.productName = {
         contains: params.productName,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
     if (params.partName) {
       whereConditions.partName = {
         contains: params.partName,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
     if (params.client) {
       whereConditions.client = {
         contains: params.client,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
@@ -236,4 +249,4 @@ export class ShipmentInspectionService {
       take: 10, // 최대 10개까지 참고 이력 조회
     });
   }
-} 
+}

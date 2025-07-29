@@ -22,7 +22,7 @@ export interface CreateIncomingInspectionDto {
     defectTypeId?: number;
     customType?: string;
     count: number;
-    details?: any;
+    details?: Record<string, unknown>;
   }[];
   attachments?: {
     file: File;
@@ -62,7 +62,7 @@ export interface CreateProcessInspectionDto {
     defectTypeId?: number;
     customType?: string;
     count: number;
-    details?: any;
+    details?: Record<string, unknown>;
   }[];
   attachments?: {
     file: File;
@@ -92,7 +92,7 @@ export interface CreateShipmentInspectionDto {
         defectTypeId?: number;
         customType?: string;
         count: number;
-        details?: any;
+        details?: Record<string, unknown>;
       }[];
     }[];
   }[];

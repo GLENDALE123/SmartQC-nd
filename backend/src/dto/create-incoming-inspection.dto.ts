@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsNumber, IsString, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class IncomingInspectionDefectDto {
@@ -70,4 +77,4 @@ export class CreateIncomingInspectionDto {
   @ValidateNested({ each: true })
   @Type(() => IncomingInspectionAttachmentDto)
   attachments?: IncomingInspectionAttachmentDto[];
-} 
+}
