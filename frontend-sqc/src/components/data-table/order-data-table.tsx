@@ -1,19 +1,21 @@
 // Order 테이블 전용 DataTable 컴포넌트
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback, memo } from "react"
 import { useSearchParams } from "react-router-dom"
 import { DateRange } from "react-day-picker"
 
 import { Order } from "@/types/models"
 import { useDataTable } from "@/hooks/use-data-table"
 import { useOrders } from "@/hooks/use-orders"
-import { useDebounce } from "@/hooks/use-debounce"
+import { useFilterOptions } from "@/hooks/use-filter-options"
 import { DataTable } from "./data-table"
+import { DataTableToolbar } from "./data-table-toolbar"
 
 import { DataTableSkeleton } from "./data-table-skeleton"
 import { orderColumns, orderSearchableFields, orderFilterableFields } from "./columns/order-columns"
 import type { DataTableFilterField } from "@/types/data-table"
 import { Cross2Icon, MagnifyingGlassIcon, DownloadIcon, ReloadIcon } from "@radix-ui/react-icons"
+import { TableIcon } from "@radix-ui/react-icons"
 import type { Table } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,156 +23,12 @@ import { DataTableColumnsVisibility } from "./data-table-columns-visibility"
 import { DateRangePicker } from "@/components/date-range-picker"
 import { TableInstanceProvider } from "./table-instance-provider"
 import { ExportDialog } from "./export-dialog"
+import { Upload, FileSpreadsheet } from "lucide-react"
+import { uploadExcel } from "@/api/excel-upload"
+import { toast } from "sonner"
+import { Progress } from "@/components/ui/progress"
 
-// OrderDataTable 전용 툴바 컴포넌트
-interface OrderDataTableToolbarProps<TData> {
-  table: Table<TData>
-  onRefresh?: () => void
-  onExport?: () => void
-  searchPlaceholder?: string
-  filterableColumns?: Array<{
-    id: string
-    title: string
-    options: Array<{ label: string; value: string }>
-  }>
-  dateRange?: DateRange
-  onDateRangeChange?: (range: DateRange | undefined) => void
-  showDateFilter?: boolean
-  dateFilterPlaceholder?: string
-  isLoading?: boolean
-  globalFilter: string
-  onGlobalFilterChange: (value: string) => void
-  columnLabels?: Record<string, string>
-}
 
-function OrderDataTableToolbar<TData>({
-  table,
-  onRefresh,
-  onExport,
-  searchPlaceholder = "검색...",
-  filterableColumns = [],
-  dateRange,
-  onDateRangeChange,
-  showDateFilter = false,
-  dateFilterPlaceholder = "날짜 범위 선택",
-  isLoading = false,
-  globalFilter,
-  onGlobalFilterChange,
-  columnLabels,
-}: OrderDataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0 || dateRange?.from || dateRange?.to || globalFilter
-  
-  // 검색 중인지 확인 (입력값과 실제 검색어가 다른 경우)
-  const isSearching = globalFilter !== "" && isLoading
-
-  const handleResetFilters = () => {
-    table.resetColumnFilters()
-    onDateRangeChange?.(undefined)
-    onGlobalFilterChange("")
-  }
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex flex-1 items-center space-x-2">
-        <div className="relative">
-          <MagnifyingGlassIcon className={`absolute left-2.5 top-2.5 h-4 w-4 ${isSearching ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
-          <Input
-            placeholder={searchPlaceholder}
-            value={globalFilter}
-            onChange={(event) => onGlobalFilterChange(event.target.value)}
-            className={`h-8 w-[150px] pl-8 lg:w-[250px] ${isSearching ? 'border-primary' : ''}`}
-            disabled={isLoading && !isSearching} // 검색 중이 아닌 로딩 상태에서만 비활성화
-          />
-          {isSearching && (
-            <div className="absolute right-2.5 top-2.5">
-              <ReloadIcon className="h-4 w-4 animate-spin text-primary" />
-            </div>
-          )}
-        </div>
-        
-        {/* Date Range Filter */}
-        {showDateFilter && onDateRangeChange && (
-          <DateRangePicker
-            dateRange={dateRange}
-            onDateRangeChange={onDateRangeChange}
-            placeholder={dateFilterPlaceholder}
-            triggerSize="sm"
-            triggerClassName="h-8 w-[200px]"
-          />
-        )}
-        
-        {/* Status Filter - Simplified for now */}
-        {filterableColumns.find(col => col.id === 'status' && col.options.length > 0) && (
-          <select
-            className="h-8 px-3 py-1 text-sm border border-input bg-background rounded-md"
-            value={(table.getColumn('status')?.getFilterValue() as string[])?.join(',') || ''}
-            onChange={(e) => {
-              const value = e.target.value
-              table.getColumn('status')?.setFilterValue(value ? [value] : undefined)
-            }}
-          >
-            <option value="">모든 상태</option>
-            {filterableColumns.find(col => col.id === 'status')?.options.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        )}
-        
-        {/* Reset Filters Button */}
-        {isFiltered && (
-          <Button
-            variant="ghost"
-            onClick={handleResetFilters}
-            className="h-8 px-2 lg:px-3"
-            disabled={isLoading}
-          >
-            초기화
-            <Cross2Icon className="ml-2 h-4 w-4" />
-          </Button>
-        )}
-      </div>
-      
-      <div className="flex items-center space-x-2">
-        {/* Refresh Button */}
-        {onRefresh && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-            className="h-8"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <ReloadIcon className="mr-2 h-4 w-4" />
-            )}
-            새로고침
-          </Button>
-        )}
-        
-        {/* Export Button */}
-        {onExport && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onExport}
-            className="h-8"
-            disabled={isLoading}
-          >
-            <DownloadIcon className="mr-2 h-4 w-4" />
-            내보내기
-          </Button>
-        )}
-        
-        {/* Column Visibility */}
-        <DataTableColumnsVisibility columnLabels={columnLabels} />
-      </div>
-    </div>
-  )
-}
 
 // OrderDataTable 컴포넌트 프롭스
 export interface OrderDataTableProps {
@@ -182,7 +40,7 @@ export interface OrderDataTableProps {
   enableExport?: boolean
 }
 
-export function OrderDataTable({
+export const OrderDataTable = memo(function OrderDataTable({
   className,
   pageSize: defaultPageSize = 20,
   enableSearch = true,
@@ -196,12 +54,8 @@ export function OrderDataTable({
   const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFilters] = useState<Record<string, any>>({})
   const [showExportDialog, setShowExportDialog] = useState(false)
-
-  // 검색어 디바운싱 적용 (1000ms 지연으로 빠른 응답성 제공)
-  const debouncedGlobalFilter = useDebounce(globalFilter, 1000)
-  
-  // 검색 중인지 확인 (현재 입력값과 디바운싱된 값이 다른 경우)
-  const isSearching = globalFilter !== debouncedGlobalFilter && globalFilter !== ""
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [isUploading, setIsUploading] = useState(false)
 
   // URL 파라미터에서 페이지 사이즈 읽기 (없으면 기본값 사용)
   const pageSize = Number(searchParams.get("per_page")) || defaultPageSize
@@ -209,12 +63,12 @@ export function OrderDataTable({
   // URL 파라미터에서 정렬 정보 읽기
   const sortParam = searchParams.get("sort")
 
-  // API 쿼리 파라미터 구성 (디바운싱된 검색어 사용)
+  // API 쿼리 파라미터 구성 (디바운스 제거 - 툴바에서 처리)
   const queryParams = useMemo(() => {
     const params: any = {
       page: currentPage,
       pageSize,
-      search: debouncedGlobalFilter || undefined, // 디바운싱된 검색어 사용
+      search: globalFilter || undefined, // 직접 사용
       filters: Object.keys(filters).length > 0 ? filters : undefined,
     }
 
@@ -233,7 +87,7 @@ export function OrderDataTable({
     }
 
     return params
-  }, [currentPage, pageSize, debouncedGlobalFilter, filters, dateRange, sortParam]) // debouncedGlobalFilter로 변경
+  }, [currentPage, pageSize, globalFilter, filters, dateRange, sortParam]) // globalFilter 직접 사용
 
   // 실제 API 호출
   const {
@@ -250,17 +104,19 @@ export function OrderDataTable({
     },
   })
 
+  // 필터 옵션 조회 (전체 데이터 기준)
+  const {
+    data: filterOptions,
+    isLoading: filterOptionsLoading,
+    error: filterOptionsError
+  } = useFilterOptions()
+
   // 검색어가 변경되면 페이지를 1로 리셋
   useEffect(() => {
-    if (debouncedGlobalFilter !== globalFilter) {
-      // 아직 디바운싱 중이므로 페이지 리셋하지 않음
-      return
-    }
-    
-    if (currentPage !== 1) {
+    if (globalFilter && currentPage !== 1) {
       setCurrentPage(1)
     }
-  }, [debouncedGlobalFilter]) // globalFilter가 아닌 debouncedGlobalFilter 사용
+  }, [globalFilter, currentPage])
 
   const error = apiError?.message || null
 
@@ -285,15 +141,18 @@ export function OrderDataTable({
     actions: '액션',
   }), [])
 
-  // 필터 옵션 동적 생성
+  // 필터 옵션 동적 생성 (전체 데이터 기준)
   const filterableColumns = useMemo(() => {
+    if (!filterOptions) return []
+    
     const statusField = orderFilterableFields.find(f => f.id === 'status')
-    const categoryField = orderFilterableFields.find(f => f.id === 'category')
-    const managerField = orderFilterableFields.find(f => f.id === 'manager')
+    const customerField = orderFilterableFields.find(f => f.id === 'customer')
+    const productNameField = orderFilterableFields.find(f => f.id === 'productName')
+    const partNameField = orderFilterableFields.find(f => f.id === 'partName')
     
     const result = []
     
-    // 상태 필터
+    // 진행상태 필터 (고정 옵션 사용)
     if (statusField) {
       result.push({
         id: statusField.id,
@@ -302,28 +161,35 @@ export function OrderDataTable({
       })
     }
     
-    // 분류 필터 (실제 데이터에서 동적 생성)
-    if (categoryField && orders.length > 0) {
-      const categories = Array.from(new Set(orders.map(item => item.category).filter(Boolean)))
+    // 발주처 필터 (전체 데이터에서 동적 생성)
+    if (customerField && filterOptions.customer.length > 0) {
       result.push({
-        id: categoryField.id,
-        title: categoryField.title,
-        options: categories.map(cat => ({ value: cat!, label: cat! }))
+        id: customerField.id,
+        title: customerField.title,
+        options: filterOptions.customer.map(customer => ({ value: customer, label: customer }))
       })
     }
     
-    // 담당자 필터 (실제 데이터에서 동적 생성)
-    if (managerField && orders.length > 0) {
-      const managers = Array.from(new Set(orders.map(item => item.manager).filter(Boolean)))
+    // 제품명 필터 (전체 데이터에서 동적 생성)
+    if (productNameField && filterOptions.productName.length > 0) {
       result.push({
-        id: managerField.id,
-        title: managerField.title,
-        options: managers.map(mgr => ({ value: mgr!, label: mgr! }))
+        id: productNameField.id,
+        title: productNameField.title,
+        options: filterOptions.productName.map(productName => ({ value: productName, label: productName }))
+      })
+    }
+    
+    // 부속명 필터 (전체 데이터에서 동적 생성)
+    if (partNameField && filterOptions.partName.length > 0) {
+      result.push({
+        id: partNameField.id,
+        title: partNameField.title,
+        options: filterOptions.partName.map(partName => ({ value: partName, label: partName }))
       })
     }
     
     return result
-  }, [orders])
+  }, [filterOptions])
 
   // 검색 및 필터 필드 구성
   const filterFields: DataTableFilterField<Order>[] = useMemo(() => [
@@ -352,6 +218,15 @@ export function OrderDataTable({
     filterFields,
   })
 
+  // 초기 컬럼 가시성 설정 (ID, 열1, 코드 컬럼 숨김)
+  useEffect(() => {
+    table.setColumnVisibility({
+      col0: false,        // ID 컬럼 숨김
+      orderNumber: false, // 열1 컬럼 숨김
+      code: false,        // 코드 컬럼 숨김
+    })
+  }, [table])
+
   // 페이지 변경 핸들러
   useEffect(() => {
     const pagination = table.getState().pagination
@@ -375,17 +250,61 @@ export function OrderDataTable({
   }, [table.getState().columnFilters])
 
   // 새로고침 핸들러
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     await refresh()
-  }
+  }, [refresh])
 
   // 내보내기 핸들러
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     setShowExportDialog(true)
-  }
+  }, [])
 
-  // 로딩 상태
-  if (loading && orders.length === 0) {
+  // 엑셀 업로드 핸들러
+  const handleUpload = useCallback(() => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.xlsx,.xls'
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0]
+      if (!file) return
+
+      setIsUploading(true)
+      setUploadProgress(0)
+
+      try {
+        await uploadExcel(file, (progress) => {
+          setUploadProgress(progress)
+        })
+        
+        toast.success('엑셀 파일이 성공적으로 업로드되었습니다.')
+        await refresh() // 데이터 새로고침
+      } catch (error) {
+        console.error('Excel upload error:', error)
+        toast.error('엑셀 업로드 중 오류가 발생했습니다.')
+      } finally {
+        setIsUploading(false)
+        setUploadProgress(0)
+      }
+    }
+    input.click()
+  }, [refresh])
+
+  // 글로벌 필터 변경 핸들러 (메모이제이션)
+  const handleGlobalFilterChange = useCallback((value: string) => {
+    setGlobalFilter(value)
+  }, [])
+
+  // 날짜 범위 변경 핸들러 (메모이제이션)
+  const handleDateRangeChange = useCallback((range: DateRange | undefined) => {
+    setDateRange(range)
+  }, [])
+
+  // 로딩 상태 구분 (디바운스 제거로 단순화)
+  const isInitialLoading = loading && orders.length === 0 && !globalFilter && Object.keys(filters).length === 0
+  const isSearchLoading = loading && (orders.length > 0 || globalFilter || Object.keys(filters).length > 0)
+
+  // 초기 로딩 상태 (데이터가 없고 검색/필터도 없는 경우)
+  if (isInitialLoading) {
     return <DataTableSkeleton columnCount={orderColumns.length} rowCount={10} />
   }
 
@@ -417,19 +336,22 @@ export function OrderDataTable({
     <div className={className}>
       <TableInstanceProvider table={table}>
         <DataTable table={table}>
-          <OrderDataTableToolbar
+          <DataTableToolbar
             table={table}
             onRefresh={enableSearch ? handleRefresh : undefined}
+            onUpload={handleUpload}
             onExport={enableExport ? handleExport : undefined}
             searchPlaceholder="주문 검색..."
             filterableColumns={enableFilters ? filterableColumns.filter(col => col.options.length > 0) : []}
             dateRange={dateRange}
-            onDateRangeChange={enableDateFilter ? setDateRange : undefined}
+            onDateRangeChange={enableDateFilter ? handleDateRangeChange : undefined}
             showDateFilter={enableDateFilter}
             dateFilterPlaceholder="날짜 범위 선택"
-            isLoading={loading || isSearching}
+            isLoading={isSearchLoading} // 검색 로딩 상태만 전달
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
             globalFilter={globalFilter}
-            onGlobalFilterChange={enableSearch ? setGlobalFilter : () => {}}
+            onGlobalFilterChange={enableSearch ? handleGlobalFilterChange : () => {}}
             columnLabels={columnLabels}
           />
         </DataTable>
@@ -449,7 +371,7 @@ export function OrderDataTable({
       />
     </div>
   )
-}
+})
 
 // 필드 라벨 매핑 함수
 function getFieldLabel(field: typeof orderSearchableFields[number]): string {
@@ -463,3 +385,6 @@ function getFieldLabel(field: typeof orderSearchableFields[number]): string {
 
   return labelMap[field] || field
 }
+
+// 기본 export
+export default OrderDataTable

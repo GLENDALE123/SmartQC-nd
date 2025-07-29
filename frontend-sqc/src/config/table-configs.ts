@@ -461,10 +461,9 @@ const orderFilters: Record<string, FilterConfig> = {
   status: {
     type: 'select',
     options: [
-      { value: '대기', label: '대기' },
-      { value: '진행중', label: '진행중' },
-      { value: '완료', label: '완료' },
-      { value: '보류', label: '보류' },
+      { value: '작업대기', label: '작업대기' },
+      { value: '작업중', label: '작업중' },
+      { value: '작업완료', label: '작업완료' },
       { value: '취소', label: '취소' }
     ],
     placeholder: '진행상태 선택'

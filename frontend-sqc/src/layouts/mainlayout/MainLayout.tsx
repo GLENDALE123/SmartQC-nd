@@ -14,6 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -122,9 +123,11 @@ export function MainLayout({ children }: MainLayoutProps) {
         <MobileHeader />
         
         {/* 모바일 메인 콘텐츠 */}
-        <main className="flex-1 overflow-auto overflow-x-hidden p-4 pb-24">
-          {children}
-        </main>
+        <ScrollArea className="flex-1 overflow-x-hidden">
+          <div className="p-4 pb-24">
+            {children}
+          </div>
+        </ScrollArea>
         
         {/* 모바일 하단 네비게이션 */}
         <MobileBottomNavigation 
@@ -223,9 +226,11 @@ export function MainLayout({ children }: MainLayoutProps) {
             </DropdownMenu>
           </div>
         </header>
-        <div className="flex-1 overflow-auto p-4">
-          {children}
-        </div>
+        <ScrollArea className="flex-1">
+          <div className="p-4">
+            {children}
+          </div>
+        </ScrollArea>
         
         {/* 환경변수 디버거 사이드바 */}
         <EnvironmentDebuggerSidebar />

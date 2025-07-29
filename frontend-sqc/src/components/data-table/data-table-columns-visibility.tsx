@@ -40,18 +40,18 @@ export function DataTableColumnsVisibility({
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button
-                aria-label="열 표시/숨김"
+                aria-label="컬럼 표시/숨김"
                 variant="outline"
                 size="sm"
                 className="ml-auto hidden h-8 lg:flex"
               >
                 <LayoutIcon className="mr-2 size-4" />
-                열
+                컬럼 표시
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
           <TooltipContent className="flex items-center gap-2 border bg-accent font-semibold text-foreground dark:bg-background/95 dark:backdrop-blur-md dark:supports-[backdrop-filter]:bg-background/40">
-            열 표시/숨김
+            컬럼 표시/숨김
             <div>
               <Kbd variant="outline" className="font-sans">
                 ⇧
@@ -68,7 +68,7 @@ export function DataTableColumnsVisibility({
         align="end"
         className="w-40 dark:bg-background/95 dark:backdrop-blur-md dark:supports-[backdrop-filter]:bg-background/40"
       >
-        <DropdownMenuLabel>열 표시/숨김</DropdownMenuLabel>
+        <DropdownMenuLabel>컬럼 표시/숨김</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table
           .getAllColumns()

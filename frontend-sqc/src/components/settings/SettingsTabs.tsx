@@ -6,7 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import ProfileSettings from "@/components/settings/ProfileSettings"
 import NotificationSettings from "@/components/settings/NotificationSettings"
 import DefectTypesSettings from "@/components/settings/DefectTypesSettings"
-import ExcelImportSettings from "@/components/settings/ExcelImportSettings"
+import ExcelImportSettings from "@/components/settings/excelimportsettings/ExcelImportMobile"
 
 export type SettingsTabId = 'profile' | 'notifications' | 'defect-types' | 'excel-import'
 

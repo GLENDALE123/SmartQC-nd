@@ -122,7 +122,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         isActive: currentPath === "/",
       },
       {
-        title: "품질 이력 분석",
+        title: "품질 이력",
         url: "/quality-history",
         icon: IconChartBar,
         isActive: currentPath === "/quality-history",

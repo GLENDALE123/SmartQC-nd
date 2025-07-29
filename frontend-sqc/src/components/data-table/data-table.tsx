@@ -28,25 +28,33 @@ interface DataTableProps<TData> extends React.HTMLAttributes<HTMLDivElement> {
   floatingBar?: React.ReactNode | null
 }
 
-export function DataTable<TData>({
+export const DataTable = React.memo(<TData>({
   table,
   floatingBar = null,
   children,
   className,
   ...props
-}: DataTableProps<TData>) {
+}: DataTableProps<TData>) => {
+  // 🔍 렌더링 추적 로그
+  console.log('🔄 DataTable 렌더링됨', {
+    timestamp: new Date().toISOString(),
+    rowCount: table.getRowModel().rows?.length || 0,
+    selectedRowCount: table.getFilteredSelectedRowModel().rows.length,
+    hasChildren: !!children
+  })
+
   return (
     <div
-      className={cn("w-full space-y-3 overflow-auto", className)}
+      className={cn("data-table-container", className)}
       {...props}
     >
       {children}
       
       {/* 테이블 컨테이너 - 반응형 및 테마 지원 */}
-      <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <div className="data-table-wrapper">
         {/* 테이블 스크롤 컨테이너 */}
-        <div className="overflow-x-auto">
-          <Table className="relative">
+        <div className="data-table-scroll overflow-x-auto">
+          <Table className="relative min-w-[800px]">
             {/* 테이블 헤더 - 고정 및 스타일링 개선 */}
             <TableHeader className="bg-muted/50 backdrop-blur-sm">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -91,21 +99,15 @@ export function DataTable<TData>({
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     className={cn(
-                      "border-b border-border/50 transition-colors duration-200",
-                      "hover:bg-muted/50 data-[state=selected]:bg-muted",
-                      "group relative",
+                      "data-table-row group",
                       // 줄무늬 효과 (선택적)
-                      index % 2 === 0 ? "bg-background" : "bg-muted/20"
+                      index % 2 === 0 ? "bg-background" : "bg-muted/60"
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell 
                         key={cell.id}
-                        className={cn(
-                          "px-4 py-3 text-center align-middle",
-                          "border-r border-border/30 last:border-r-0",
-                          "transition-colors duration-200"
-                        )}
+                        className="data-table-cell text-center"
                         style={{
                           width: cell.column.getSize(),
                           minWidth: cell.column.getSize(),
@@ -124,10 +126,7 @@ export function DataTable<TData>({
                 <TableRow className="hover:bg-transparent">
                   <TableCell
                     colSpan={table.getAllColumns().length}
-                    className={cn(
-                      "h-32 text-center text-muted-foreground",
-                      "bg-muted/10 border-none"
-                    )}
+                    className="data-table-cell-empty h-32 text-center bg-muted/10 border-none"
                   >
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <div className="text-lg font-medium">데이터가 없습니다</div>
@@ -155,4 +154,4 @@ export function DataTable<TData>({
       </div>
     </div>
   )
-}
+}) as <TData>(props: DataTableProps<TData>) => React.ReactElement

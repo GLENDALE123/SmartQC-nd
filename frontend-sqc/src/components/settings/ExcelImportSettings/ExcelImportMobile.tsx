@@ -65,7 +65,7 @@ export default function ExcelImportMobile() {
     }, 200);
 
     try {
-      const response = await uploadExcel(importFile);
+      const response = await uploadExcel(importFile, setUploadProgress);
       
       // 업로드 완료 시 진행바를 100%로 설정
       setUploadProgress(100);

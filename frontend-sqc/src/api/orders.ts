@@ -109,10 +109,11 @@ export class OrderApi {
       // 필터 파라미터
       if (params.filters) {
         Object.entries(params.filters).forEach(([key, value]) => {
-          if (Array.isArray(value)) {
-            value.forEach(v => queryParams.append(`filters[${key}]`, v.toString()));
-          } else if (value !== undefined && value !== null) {
-            queryParams.append(`filters[${key}]`, value.toString());
+          if (Array.isArray(value) && value.length > 0) {
+            // 배열을 콤마로 구분된 문자열로 변환
+            queryParams.append(key, value.join(','));
+          } else if (value !== undefined && value !== null && value !== '') {
+            queryParams.append(key, value.toString());
           }
         });
       }
@@ -251,6 +252,29 @@ export class OrderApi {
       return response.data;
     } catch (error) {
       console.error('Orders refresh failed:', error);
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
+   * 필터 옵션 조회 (전체 데이터 기준)
+   */
+  async getFilterOptions(): Promise<ApiResponse<{
+    status: string[];
+    customer: string[];
+    productName: string[];
+    partName: string[];
+  }>> {
+    try {
+      const response = await apiClient.get<ApiResponse<{
+        status: string[];
+        customer: string[];
+        productName: string[];
+        partName: string[];
+      }>>('/orders/filter-options');
+      return response.data;
+    } catch (error) {
+      console.error('Filter options fetch failed:', error);
       throw this.handleApiError(error);
     }
   }

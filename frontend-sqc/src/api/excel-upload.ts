@@ -11,37 +11,6 @@ export interface UploadResult {
   };
 }
 
-export interface UploadProgress {
-  uploadId: string;
-  stage: 'parsing' | 'validating' | 'processing' | 'completed' | 'error';
-  progress: number;
-  message: string;
-  processedRows?: number;
-  totalRows?: number;
-  currentBatch?: number;
-  totalBatches?: number;
-  processedChunks?: number;
-  totalChunks?: number;
-  details?: {
-    created: number;
-    updated: number;
-    skipped: number;
-    failed: number;
-  };
-}
-
-export interface OptimizedUploadResult {
-  uploadId: string;
-  message: string;
-}
-
-export interface ValidationSummary {
-  total: number;
-  valid: number;
-  invalid: number;
-  errors: string[];
-}
-
 export interface ExcelUploadResponse {
   message: string;
   data: {
@@ -91,8 +60,8 @@ export interface ExcelUploadError {
   };
 }
 
-// 기존 엑셀 업로드 함수
-export const uploadExcel = async (file: File): Promise<UploadResult> => {
+// 기본 엑셀 업로드 함수
+export const uploadExcel = async (file: File, onProgress?: (progress: number) => void): Promise<UploadResult> => {
   const formData = new FormData();
   formData.append('file', file);
 
@@ -100,55 +69,19 @@ export const uploadExcel = async (file: File): Promise<UploadResult> => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
-  });
-
-  return response.data.data;
-};
-
-// 최적화된 엑셀 업로드 함수
-export const uploadOptimizedExcel = async (
-  file: File, 
-  preProcessedData?: any[], 
-  validationSummary?: ValidationSummary
-): Promise<OptimizedUploadResult> => {
-  const formData = new FormData();
-  formData.append('file', file);
-  
-  if (preProcessedData) {
-    formData.append('preProcessedData', JSON.stringify(preProcessedData));
-  }
-  
-  if (validationSummary) {
-    formData.append('validationSummary', JSON.stringify(validationSummary));
-  }
-
-  const response = await apiClient.post('/upload/optimized/excel-orders', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
+    timeout: 120000, // 엑셀 업로드는 2분 타임아웃 (대용량 파일 처리 고려)
+    onUploadProgress: (progressEvent) => {
+      if (onProgress && progressEvent.total) {
+        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        onProgress(progress);
+      }
     },
   });
 
   return response.data.data;
 };
 
-// 업로드 진행률 조회 (SSE 대신 폴링용)
-export const getUploadProgress = async (uploadId: string): Promise<UploadProgress> => {
-  const response = await apiClient.get(`/upload/optimized/progress/${uploadId}`);
-  return response.data.data;
-};
-
-// 활성 업로드 목록 조회
-export const getActiveUploads = async (): Promise<UploadProgress[]> => {
-  const response = await apiClient.get('/upload/optimized/active');
-  return response.data.data;
-};
-
-// 업로드 취소
-export const cancelUpload = async (uploadId: string): Promise<void> => {
-  await apiClient.delete(`/upload/optimized/${uploadId}`);
-};
-
-// 기존 함수들 유지
+// 기본 함수들
 export const getProgress = async () => {
   const response = await apiClient.get('/upload/progress');
   return response.data;
@@ -163,6 +96,5 @@ export const getUploadHistory = async () => {
 export const excelUploadApi = {
   uploadExcel,
   getProgress,
-  cancelUpload,
   getUploadHistory,
 };

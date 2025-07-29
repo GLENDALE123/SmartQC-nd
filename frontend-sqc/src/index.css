@@ -6,63 +6,101 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
-    --sidebar: 0 0% 100%;
-    --sidebar-foreground: 222.2 84% 4.9%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 222.2 84% 4.9%;
-    --sidebar-ring: 221.2 83.2% 53.3%;
-  }
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 20%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 20%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 20%;
+  --primary: 217.2193 91.2195% 59.8039%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220.0000 14.2857% 95.8824%;
+  --secondary-foreground: 215 13.7931% 34.1176%;
+  --muted: 210 20.0000% 98.0392%;
+  --muted-foreground: 220 8.9362% 46.0784%;
+  --accent: 204.0000 93.7500% 93.7255%;
+  --accent-foreground: 224.4444 64.2857% 32.9412%;
+  --destructive: 0 84.2365% 60.1961%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 13.0435% 90.9804%;
+  --input: 220 13.0435% 90.9804%;
+  --ring: 217.2193 91.2195% 59.8039%;
+  --chart-1: 217.2193 91.2195% 59.8039%;
+  --chart-2: 221.2121 83.1933% 53.3333%;
+  --chart-3: 224.2781 76.3265% 48.0392%;
+  --chart-4: 225.9310 70.7317% 40.1961%;
+  --chart-5: 224.4444 64.2857% 32.9412%;
+  --sidebar: 210 20.0000% 98.0392%;
+  --sidebar-foreground: 0 0% 20%;
+  --sidebar-primary: 217.2193 91.2195% 59.8039%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 204.0000 93.7500% 93.7255%;
+  --sidebar-accent-foreground: 224.4444 64.2857% 32.9412%;
+  --sidebar-border: 220 13.0435% 90.9804%;
+  --sidebar-ring: 217.2193 91.2195% 59.8039%;
+  --font-sans: Inter, sans-serif;
+  --font-serif: Source Serif 4, serif;
+  --font-mono: JetBrains Mono, monospace;
+  --radius: 0.375rem;
+  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
 
-  .dark,
-  [data-theme="dark"] {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    --sidebar: 222.2 84% 4.9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-ring: 224.3 76.3% 48%;
-  }
+.dark {
+  --background: 0 0% 9.0196%;
+  --foreground: 0 0% 89.8039%;
+  --card: 0 0% 14.9020%;
+  --card-foreground: 0 0% 89.8039%;
+  --popover: 0 0% 14.9020%;
+  --popover-foreground: 0 0% 89.8039%;
+  --primary: 217.2193 91.2195% 59.8039%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 14.9020%;
+  --secondary-foreground: 0 0% 89.8039%;
+  --muted: 0 0% 14.9020%;
+  --muted-foreground: 0 0% 63.9216%;
+  --accent: 224.4444 64.2857% 32.9412%;
+  --accent-foreground: 213.3333 96.9231% 87.2549%;
+  --destructive: 0 84.2365% 60.1961%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 25.0980%;
+  --input: 0 0% 25.0980%;
+  --ring: 217.2193 91.2195% 59.8039%;
+  --chart-1: 213.1169 93.9024% 67.8431%;
+  --chart-2: 217.2193 91.2195% 59.8039%;
+  --chart-3: 221.2121 83.1933% 53.3333%;
+  --chart-4: 224.2781 76.3265% 48.0392%;
+  --chart-5: 225.9310 70.7317% 40.1961%;
+  --sidebar: 0 0% 9.0196%;
+  --sidebar-foreground: 0 0% 89.8039%;
+  --sidebar-primary: 217.2193 91.2195% 59.8039%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 224.4444 64.2857% 32.9412%;
+  --sidebar-accent-foreground: 213.3333 96.9231% 87.2549%;
+  --sidebar-border: 0 0% 25.0980%;
+  --sidebar-ring: 217.2193 91.2195% 59.8039%;
+  --font-sans: Inter, sans-serif;
+  --font-serif: Source Serif 4, serif;
+  --font-mono: JetBrains Mono, monospace;
+  --radius: 0.375rem;
+  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+}
 }
 
 @layer base {
@@ -101,26 +139,172 @@
   /* 스크롤바 스타일링 */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--muted));
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
   }
   
   .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
   
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
-    border-radius: 3px;
+    background: transparent;
+    border-radius: 4px;
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground));
-    border-radius: 3px;
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--foreground));
+    background: hsl(var(--muted-foreground) / 0.5);
+    background-clip: content-box;
+  }
+  
+  /* 데이터 테이블 전용 스크롤바 스타일 */
+.data-table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.4) hsl(var(--muted) / 0.2);
+}
+
+.data-table-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.data-table-scroll::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.2);
+  border-radius: 6px;
+  margin: 2px;
+}
+
+.data-table-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.4);
+  border-radius: 6px;
+  border: 1px solid hsl(var(--muted) / 0.3);
+  transition: all 0.2s ease;
+}
+
+.data-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.6);
+  border-color: hsl(var(--muted-foreground) / 0.2);
+}
+
+.data-table-scroll::-webkit-scrollbar-thumb:active {
+  background: hsl(var(--muted-foreground) / 0.7);
+}
+
+.data-table-scroll::-webkit-scrollbar-corner {
+  background: hsl(var(--muted) / 0.2);
+  border-radius: 6px;
+}
+
+/* 데이터 테이블 상태 배지 스타일 */
+.data-table-status-badge {
+  @apply font-medium text-xs px-2 py-1 rounded-full transition-colors duration-200;
+}
+
+.data-table-status-completed {
+  @apply bg-primary text-primary-foreground border-primary;
+  @apply dark:bg-primary dark:text-primary-foreground dark:border-primary;
+}
+
+.data-table-status-progress {
+  @apply bg-orange-100 text-orange-800 border-orange-200;
+  @apply dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800;
+}
+
+.data-table-status-pending {
+  @apply bg-gray-100 text-gray-600 border-gray-200;
+  @apply dark:bg-gray-800/50 dark:text-gray-400 dark:border-gray-700;
+}
+
+.data-table-status-hold {
+  @apply bg-orange-100 text-orange-800 border-orange-200;
+  @apply dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800;
+}
+
+.data-table-status-cancelled {
+  @apply bg-red-100 text-red-800 border-red-200;
+  @apply dark:bg-red-900/20 dark:text-red-400 dark:border-red-800;
+}
+
+/* 데이터 테이블 기본 스타일 */
+.data-table-container {
+  @apply w-full space-y-3 overflow-auto;
+}
+
+.data-table-wrapper {
+  @apply relative overflow-hidden rounded-lg border border-border bg-card shadow-sm;
+}
+
+.data-table-row {
+  @apply border-b border-border/50 transition-colors duration-200;
+  @apply hover:bg-muted/50 data-[state=selected]:bg-muted;
+  @apply relative;
+}
+
+.data-table-cell {
+  @apply px-4 py-3 align-middle;
+  @apply border-r border-border/30 last:border-r-0;
+  @apply transition-colors duration-200;
+}
+
+.data-table-cell-empty {
+  @apply text-muted-foreground italic;
+}
+
+.data-table-cell-number {
+  @apply font-mono text-sm font-medium tabular-nums text-foreground;
+}
+
+.data-table-cell-currency {
+  @apply font-mono text-sm font-medium tabular-nums text-foreground;
+}
+
+.data-table-button {
+  @apply bg-background border-border;
+  @apply hover:bg-accent hover:text-accent-foreground;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply transition-all duration-200;
+}
+
+.data-table-button-sm {
+  @apply h-8 px-3;
+}
+
+.data-table-button-icon {
+  @apply h-8 w-8;
+}
+
+/* 기존 전역 스크롤바 스타일 */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+  
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+    background-clip: content-box;
   }
   
   /* 테이블 반응형 유틸리티 */

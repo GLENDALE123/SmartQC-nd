@@ -18,7 +18,7 @@ export default function Settings() {
     try {
       // 설정 내보내기 로직 구현
       await new Promise(resolve => setTimeout(resolve, 1000)) // 임시 지연
-      toast.success("설정이 성공적으로 내보내졌습니다.")
+      toast.info("설정이 성공적으로 내보내졌습니다.")
     } catch (error) {
       toast.error("설정 내보내기에 실패했습니다.")
     } finally {

@@ -389,21 +389,25 @@ export const orderFilterableFields = [
     id: 'status',
     title: '진행상태',
     options: [
-      { value: '대기', label: '대기' },
-      { value: '진행중', label: '진행중' },
-      { value: '완료', label: '완료' },
-      { value: '보류', label: '보류' },
+      { value: '작업대기', label: '작업대기' },
+      { value: '작업중', label: '작업중' },
+      { value: '작업완료', label: '작업완료' },
       { value: '취소', label: '취소' },
     ]
   },
   {
-    id: 'category',
-    title: '분류',
+    id: 'customer',
+    title: '발주처',
     options: [] // 실제 데이터에서 동적으로 생성
   },
   {
-    id: 'manager',
-    title: '담당자',
+    id: 'productName',
+    title: '제품명',
+    options: [] // 실제 데이터에서 동적으로 생성
+  },
+  {
+    id: 'partName',
+    title: '부속명',
     options: [] // 실제 데이터에서 동적으로 생성
   }
 ] as const

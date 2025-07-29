@@ -143,6 +143,16 @@ export function useOrders(
     const currentParams = JSON.parse(paramsString);
     const cacheKey = getCacheKey(currentParams);
     
+    // 🔍 요청 추적 로그
+    console.log('🔄 useOrders fetchOrders 호출됨', {
+      timestamp: new Date().toISOString(),
+      params: currentParams,
+      cacheKey,
+      forceRefresh,
+      loading,
+      lastRequest: lastRequestRef.current
+    });
+    
     // 중복 요청 방지 - 동일한 요청이 이미 진행 중인 경우 무시
     if (lastRequestRef.current === cacheKey && loading && !forceRefresh) {
       console.log('🔄 동일한 요청이 진행 중입니다. 중복 요청을 방지합니다.');

@@ -293,23 +293,47 @@ export type PaginationVariants = VariantProps<typeof paginationVariants>
 export type SidebarVariants = VariantProps<typeof sidebarVariants>
 
 // 헬퍼 함수들
-export const getStatusVariant = (status: string): StatusBadgeVariants['status'] => {
-  switch (status.toLowerCase()) {
+export function getStatusVariant(status: string): StatusBadgeVariants['status'] {
+  const normalizedStatus = status?.toLowerCase().trim()
+  
+  // 한국어 상태값 매핑
+  switch (normalizedStatus) {
+    case '작업완료':
     case '완료':
     case 'completed':
+    case 'complete':
+    case 'done':
       return 'completed'
+    
+    case '작업중':
     case '진행중':
-    case 'in_progress':
+    case 'progress':
+    case 'in-progress':
+    case 'in progress':
+    case 'working':
+    case 'processing':
       return 'progress'
+    
+    case '작업대기':
     case '대기':
     case 'pending':
+    case 'waiting':
+    case 'standby':
       return 'pending'
+    
     case '보류':
-    case 'on_hold':
+    case 'hold':
+    case 'on-hold':
+    case 'on hold':
+    case 'paused':
       return 'hold'
+    
     case '취소':
     case 'cancelled':
+    case 'canceled':
+    case 'cancel':
       return 'cancelled'
+    
     default:
       return 'pending'
   }

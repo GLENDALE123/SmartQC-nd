@@ -1,9 +1,9 @@
-import { useIsMobile } from "@/hooks/use-mobile";
-import ExcelImportDesktop from "./ExcelImportSettings/ExcelImportDesktop";
-import ExcelImportMobile from "./ExcelImportSettings/ExcelImportMobile";
+import ExcelImportMobile from "./excelimportsettings/ExcelImportMobile";
 
 export default function ExcelImportSettings() {
-  const isMobile = useIsMobile();
-
-  return isMobile ? <ExcelImportMobile /> : <ExcelImportDesktop />;
+  return (
+    <div className="space-y-6">
+      <ExcelImportMobile />
+    </div>
+  );
 }

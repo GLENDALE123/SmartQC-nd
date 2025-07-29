@@ -3,7 +3,7 @@ import axios from 'axios';
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   withCredentials: true,
-  timeout: 10000, // 10초 타임아웃 설정
+  timeout: 60000, // 60초 타임아웃 설정 (엑셀 업로드 등 시간이 오래 걸리는 작업 고려)
 });
 
 // 토큰 가져오기 함수 (localStorage -> sessionStorage 순서로 시도)
